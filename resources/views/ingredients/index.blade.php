@@ -1,0 +1,61 @@
+@extends('layouts.app')
+
+@section('title', 'Ingredients')
+
+@section('content')
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <form method="GET" action="{{ route('ingredients.index') }}" class="flex flex-wrap items-center gap-2">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search..."
+                   class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-amber-500">
+            <select name="stock" onchange="this.form.submit()"
+                    class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm">
+                <option value="">All stock</option>
+                <option value="low" @selected(request('stock') === 'low')>Low stock</option>
+                <option value="ok" @selected(request('stock') === 'ok')>In stock</option>
+            </select>
+        </form>
+        <a href="{{ route('ingredients.create') }}"
+           class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">+ New Ingredient</a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3">Ingredient</th>
+                        <th class="px-5 py-3">Supplier</th>
+                        <th class="px-5 py-3 text-right">Stock</th>
+                        <th class="px-5 py-3 text-right">Cost / unit</th>
+                        <th class="px-5 py-3 text-right">Stock value</th>
+                        <th class="px-5 py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($ingredients as $ingredient)
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-5 py-3">
+                                <a href="{{ route('ingredients.show', $ingredient) }}" class="font-medium text-slate-900 hover:text-amber-600">{{ $ingredient->name }}</a>
+                                @if ($ingredient->sku)<p class="text-xs text-slate-400">{{ $ingredient->sku }}</p>@endif
+                            </td>
+                            <td class="px-5 py-3">{{ $ingredient->supplier?->name ?: '-' }}</td>
+                            <td class="px-5 py-3 text-right">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold {{ $ingredient->isLowStock() ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700' }}">
+                                    {{ $ingredient->stock_qty }} {{ $ingredient->unit }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 text-right">{{ config('pos.currency') }}{{ number_format($ingredient->cost_per_unit, 2) }}</td>
+                            <td class="px-5 py-3 text-right">{{ config('pos.currency') }}{{ number_format($ingredient->stockValue(), 2) }}</td>
+                            <td class="px-5 py-3 text-right whitespace-nowrap">
+                                <a href="{{ route('ingredients.show', $ingredient) }}" class="text-amber-600 hover:text-amber-500 font-medium mr-3">View</a>
+                                <a href="{{ route('ingredients.edit', $ingredient) }}" class="text-slate-600 hover:text-slate-900 font-medium">Edit</a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="px-5 py-10 text-center text-slate-500">No ingredients found.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
