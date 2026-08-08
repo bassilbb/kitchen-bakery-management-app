@@ -18,6 +18,7 @@ A simple, all-in-one Laravel application for running a kitchen and bakery busine
 - **Stock Movements** - Complete audit trail of every purchase, usage, sale, and manual adjustment for ingredients and products.
 - **Authentication** - Register, login, and profile/password management. The first registered user becomes the admin.
 - **Role-based permissions** - Admins see everything. Kitchen staff see only Ingredients/Suppliers; Bakery staff see only Products/Recipes/Production. Reports and user management are admin-only. See `docs/KITCHEN_AND_BAKERY_OVERVIEW.md`.
+- **Company settings** - Admins can upload the company logo and set the company name from Settings; they appear in the sidebar and on the login page.
 
 ## Requirements
 
@@ -66,7 +67,7 @@ Set the tax rate applied at checkout in your `.env`:
 POS_TAX_RATE=0
 ```
 
-You can also change the currency symbol (default `$`):
+You can also change the currency symbol (default Naira `₦`):
 
 ```
 POS_CURRENCY=$

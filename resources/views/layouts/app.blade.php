@@ -12,9 +12,16 @@
         <aside class="lg:w-64 lg:fixed lg:inset-y-0 bg-slate-900 text-slate-300 flex flex-col">
             <div class="px-5 py-5 border-b border-slate-800">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-slate-900 font-black text-xl">B</span>
+                    @php $logoUrl = \App\Models\Setting::logoUrl(); $companyName = \App\Models\Setting::companyName(); @endphp
+                    @if ($logoUrl)
+                        <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/95 p-1 overflow-hidden">
+                            <img src="{{ $logoUrl }}" alt="Logo" class="h-full w-full object-contain">
+                        </span>
+                    @else
+                        <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-slate-900 font-black text-xl">B</span>
+                    @endif
                     <span>
-                        <span class="block font-bold text-white leading-tight">Kitchen &amp; Bakery</span>
+                        <span class="block font-bold text-white leading-tight">{{ $companyName }}</span>
                         <span class="block text-xs text-slate-400">Management System</span>
                     </span>
                 </a>
@@ -39,6 +46,7 @@
                 @if (auth()->user()->isAdmin())
                     <x-nav-item href="{{ route('reports.index') }}" label="Reports" icon="reports" :active="request()->routeIs('reports.*')" />
                     <x-nav-item href="{{ route('users.index') }}" label="Users" icon="user" :active="request()->routeIs('users.*')" />
+                    <x-nav-item href="{{ route('settings.index') }}" label="Settings" icon="settings" :active="request()->routeIs('settings.*')" />
                 @endif
             </nav>
 
