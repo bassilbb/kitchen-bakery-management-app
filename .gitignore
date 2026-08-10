@@ -156,6 +156,19 @@
 **/.flutter-plugins
 **/.flutter-plugins-dependencies
 
+# Laravel
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+/vendor
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/.phpunit.cache
+/.phpunit.result.cache
+/database/database.sqlite
+
 # Compressed files
 *.zip
 *.rar
