@@ -56,7 +56,7 @@
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
             <h2 class="font-semibold text-slate-900 mb-4">Sales - Last 7 Days</h2>
             @php
                 $salesConfig = [
@@ -74,6 +74,7 @@
                     ],
                     'options' => [
                         'responsive' => true,
+                        'maintainAspectRatio' => false,
                         'plugins' => ['legend' => ['display' => false]],
                         'scales' => [
                             'y' => ['beginAtZero' => true, 'ticks' => ['callback' => 'formatCurrency']],
@@ -81,12 +82,12 @@
                     ],
                 ];
             @endphp
-            <div class="h-64">
-                <canvas data-chart="{{ json_encode($salesConfig) }}"></canvas>
+            <div class="relative flex-1 min-h-64">
+                <canvas data-chart="{{ json_encode($salesConfig) }}" class="absolute inset-0 w-full h-full"></canvas>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
             <h2 class="font-semibold text-slate-900 mb-4">Sales vs Expenses - Last 7 Days</h2>
             @php
                 $netConfig = [
@@ -100,20 +101,21 @@
                     ],
                     'options' => [
                         'responsive' => true,
+                        'maintainAspectRatio' => false,
                         'scales' => [
                             'y' => ['beginAtZero' => true, 'ticks' => ['callback' => 'formatCurrency']],
                         ],
                     ],
                 ];
             @endphp
-            <div class="h-64">
-                <canvas data-chart="{{ json_encode($netConfig) }}"></canvas>
+            <div class="relative flex-1 min-h-64">
+                <canvas data-chart="{{ json_encode($netConfig) }}" class="absolute inset-0 w-full h-full"></canvas>
             </div>
         </div>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
             <h2 class="font-semibold text-slate-900 mb-4">Payment Methods - Last 7 Days</h2>
             @php
                 $paymentConfig = [
@@ -127,6 +129,7 @@
                     ],
                     'options' => [
                         'responsive' => true,
+                        'maintainAspectRatio' => false,
                         'plugins' => [
                             'legend' => ['position' => 'bottom'],
                             'tooltip' => ['callbacks' => ['label' => 'formatCurrencyTooltip']],
@@ -134,8 +137,8 @@
                     ],
                 ];
             @endphp
-            <div class="h-64 flex items-center justify-center">
-                <canvas data-chart="{{ json_encode($paymentConfig) }}"></canvas>
+            <div class="relative flex-1 min-h-64">
+                <canvas data-chart="{{ json_encode($paymentConfig) }}" class="absolute inset-0 w-full h-full"></canvas>
             </div>
         </div>
 
