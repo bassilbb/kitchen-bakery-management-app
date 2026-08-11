@@ -4,7 +4,7 @@ A simple, all-in-one Laravel application for running a kitchen and bakery busine
 
 ## Features
 
-- **Dashboard** - Today's sales, order counts, weekly sales, today's expenses and net, low-stock alerts, top products, recent orders, today's payment breakdown, and a 7-day sales chart.
+- **Dashboard** - Today's sales, order counts, weekly sales, today's expenses and net, low-stock alerts, top products, recent orders, today's payment breakdown, and interactive charts (7-day sales trend, sales vs expenses, and payment-method breakdown).
 - **Sell (POS)** - Tap products to add them to a cart, adjust quantities, apply discounts, choose a payment method, hold a sale for later, and complete the sale with a printable receipt. Link the sale to a saved customer or type a new name.
 - **Products** - Finished goods with categories, selling price, estimated cost, stock levels, and active/hidden status.
 - **Recipes** - Define how many of each ingredient a product needs (bill of materials). Product cost is recalculated automatically when you save the recipe.

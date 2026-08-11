@@ -58,17 +58,84 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
         <div class="bg-white rounded-xl border border-slate-200 p-5">
             <h2 class="font-semibold text-slate-900 mb-4">Sales - Last 7 Days</h2>
-            @php $max = max(1, $salesChart->max('total')); @endphp
-            <div class="flex items-end justify-between gap-2 h-40">
-                @foreach ($salesChart as $point)
-                    <div class="flex flex-col items-center flex-1 gap-1">
-                        <span class="text-xs text-slate-500 font-medium">{{ number_format($point['total'], 0) }}</span>
-                        <div class="w-full bg-amber-100 rounded-t-md flex items-end justify-center overflow-hidden" style="height: 100%">
-                            <div class="w-full bg-amber-500 rounded-t-md" style="height: {{ round($point['total'] / $max * 100) }}%"></div>
-                        </div>
-                        <span class="text-xs text-slate-500">{{ $point['label'] }}</span>
-                    </div>
-                @endforeach
+            @php
+                $salesConfig = [
+                    'type' => 'line',
+                    'data' => [
+                        'labels' => $salesChart->pluck('label'),
+                        'datasets' => [[
+                            'label' => 'Sales',
+                            'data' => $salesChart->pluck('total'),
+                            'borderColor' => '#f59e0b',
+                            'backgroundColor' => 'rgba(245, 158, 11, 0.15)',
+                            'fill' => true,
+                            'tension' => 0.35,
+                        ]],
+                    ],
+                    'options' => [
+                        'responsive' => true,
+                        'plugins' => ['legend' => ['display' => false]],
+                        'scales' => [
+                            'y' => ['beginAtZero' => true, 'ticks' => ['callback' => 'formatCurrency']],
+                        ],
+                    ],
+                ];
+            @endphp
+            <div class="h-64">
+                <canvas data-chart="{{ json_encode($salesConfig) }}"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="font-semibold text-slate-900 mb-4">Sales vs Expenses - Last 7 Days</h2>
+            @php
+                $netConfig = [
+                    'type' => 'bar',
+                    'data' => [
+                        'labels' => $netChart->pluck('label'),
+                        'datasets' => [
+                            ['label' => 'Sales', 'data' => $netChart->pluck('sales'), 'backgroundColor' => '#10b981'],
+                            ['label' => 'Expenses', 'data' => $netChart->pluck('expenses'), 'backgroundColor' => '#f43f5e'],
+                        ],
+                    ],
+                    'options' => [
+                        'responsive' => true,
+                        'scales' => [
+                            'y' => ['beginAtZero' => true, 'ticks' => ['callback' => 'formatCurrency']],
+                        ],
+                    ],
+                ];
+            @endphp
+            <div class="h-64">
+                <canvas data-chart="{{ json_encode($netConfig) }}"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="font-semibold text-slate-900 mb-4">Payment Methods - Last 7 Days</h2>
+            @php
+                $paymentConfig = [
+                    'type' => 'doughnut',
+                    'data' => [
+                        'labels' => $paymentChart->pluck('method')->map(fn ($m) => ucfirst($m)),
+                        'datasets' => [[
+                            'data' => $paymentChart->pluck('total'),
+                            'backgroundColor' => ['#10b981', '#0ea5e9', '#8b5cf6'],
+                        ]],
+                    ],
+                    'options' => [
+                        'responsive' => true,
+                        'plugins' => [
+                            'legend' => ['position' => 'bottom'],
+                            'tooltip' => ['callbacks' => ['label' => 'formatCurrencyTooltip']],
+                        ],
+                    ],
+                ];
+            @endphp
+            <div class="h-64 flex items-center justify-center">
+                <canvas data-chart="{{ json_encode($paymentConfig) }}"></canvas>
             </div>
         </div>
 
