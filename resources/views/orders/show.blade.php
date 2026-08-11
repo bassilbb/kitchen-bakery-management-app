@@ -10,17 +10,40 @@
                     <p class="text-sm text-slate-500">Order</p>
                     <p class="text-xl font-bold text-slate-900">{{ $order->order_number }}</p>
                 </div>
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $order->isRefunded() ? 'bg-slate-100 text-slate-500' : 'bg-emerald-100 text-emerald-700' }}">
+                @php
+                    $badge = [
+                        'completed' => 'bg-emerald-100 text-emerald-700',
+                        'pending' => 'bg-amber-100 text-amber-700',
+                        'failed' => 'bg-rose-100 text-rose-700',
+                        'refunded' => 'bg-slate-100 text-slate-500',
+                    ][$order->status] ?? 'bg-slate-100 text-slate-500';
+                @endphp
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $badge }}">
                     {{ ucfirst($order->status) }}
                 </span>
             </div>
 
             <dl class="grid grid-cols-2 sm:grid-cols-4 gap-y-3 text-sm">
-                <div><dt class="text-slate-500">Customer</dt><dd class="font-medium">{{ $order->customer_name ?: 'Walk-in' }}</dd></div>
+                <div>
+                    <dt class="text-slate-500">Customer</dt>
+                    <dd class="font-medium">
+                        @if ($order->customer)
+                            <a href="{{ route('customers.show', $order->customer) }}" class="text-amber-600 hover:text-amber-500">{{ $order->customer->name }}</a>
+                        @else
+                            {{ $order->customer_name ?: 'Walk-in' }}
+                        @endif
+                    </dd>
+                </div>
                 <div><dt class="text-slate-500">Payment</dt><dd class="font-medium">{{ ucfirst($order->payment_method) }}</dd></div>
                 <div><dt class="text-slate-500">Sold by</dt><dd class="font-medium">{{ $order->user?->name ?: '-' }}</dd></div>
                 <div><dt class="text-slate-500">Date</dt><dd class="font-medium">{{ $order->created_at->format('M d, Y h:i A') }}</dd></div>
             </dl>
+
+            @if ($order->transaction_reference)
+                <p class="mt-4 text-sm text-slate-500 bg-slate-50 rounded-lg px-4 py-3">
+                    Payment reference: <span class="font-mono font-medium text-slate-700">{{ $order->transaction_reference }}</span>
+                </p>
+            @endif
 
             <table class="w-full text-sm mt-5">
                 <thead class="text-left text-xs uppercase tracking-wide text-slate-500 border-b border-slate-200">
@@ -60,7 +83,13 @@
                 <p class="mt-4 text-sm text-slate-600 bg-slate-50 rounded-lg px-4 py-3">Note: {{ $order->note }}</p>
             @endif
 
-            @if (! $order->isRefunded())
+            @if ($order->isPending())
+                <div class="mt-6 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+                    This order is awaiting online payment confirmation.
+                </div>
+            @endif
+
+            @if (! $order->isRefunded() && $order->isPaid())
                 <div class="mt-6 flex flex-wrap gap-3">
                     <a href="{{ route('pos.show', $order) }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">View Receipt</a>
                     <form method="POST" action="{{ route('orders.refund', $order) }}" onsubmit="return confirm('Refund this order and return items to stock?')">

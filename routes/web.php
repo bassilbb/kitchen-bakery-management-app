@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PosController;
@@ -37,8 +39,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos/update-qty', [PosController::class, 'updateQty'])->name('pos.update-qty');
     Route::post('/pos/remove', [PosController::class, 'remove'])->name('pos.remove');
     Route::post('/pos/clear', [PosController::class, 'clear'])->name('pos.clear');
+    Route::post('/pos/hold', [PosController::class, 'hold'])->name('pos.hold');
+    Route::post('/pos/resume/{key}', [PosController::class, 'resume'])->name('pos.resume');
+    Route::post('/pos/discard/{key}', [PosController::class, 'discard'])->name('pos.discard');
     Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
     Route::get('/pos/{order}', [PosController::class, 'show'])->name('pos.show');
+
+    Route::get('/paystack/callback', [PosController::class, 'paystackCallback'])->name('paystack.callback');
+
+    Route::get('/customers/export', [CustomerController::class, 'export'])->name('customers.export');
+    Route::resource('customers', CustomerController::class);
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -77,6 +87,9 @@ Route::middleware('auth')->group(function () {
     // Admin-only modules
     Route::middleware('admin')->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export-orders', [ReportController::class, 'exportOrders'])->name('reports.export-orders');
+
+        Route::resource('expenses', ExpenseController::class)->except(['show']);
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');

@@ -47,4 +47,46 @@
             </form>
         </div>
     </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-6 mt-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-semibold text-slate-900">Paystack (online payments)</h2>
+                <p class="text-sm text-slate-500 mt-1">
+                    Enable the "Online" payment method at checkout. Get your keys from
+                    <a href="https://dashboard.paystack.com" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-500">dashboard.paystack.com</a>.
+                </p>
+            </div>
+            @if (\App\Models\Setting::paystackPublicKey() && \App\Models\Setting::paystackSecretKey())
+                <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Configured</span>
+            @else
+                <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">Not configured</span>
+            @endif
+        </div>
+
+        <form method="POST" action="{{ route('settings.update') }}" class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            @csrf
+            <div>
+                <label for="paystack_public_key" class="block text-sm font-medium text-slate-700">Public key</label>
+                <input id="paystack_public_key" type="text" name="paystack_public_key"
+                       value="{{ \App\Models\Setting::paystackPublicKey() }}"
+                       placeholder="YOUR_PAYSTACK_PUBLIC_KEY_HERE"
+                       class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                <p class="text-xs text-slate-400 mt-1">Clearing this removes the saved key.</p>
+            </div>
+            <div>
+                <label for="paystack_secret_key" class="block text-sm font-medium text-slate-700">Secret key</label>
+                <input id="paystack_secret_key" type="password" name="paystack_secret_key"
+                       placeholder="{{ \App\Models\Setting::paystackSecretKey() ? '•••••••• (leave blank to keep current)' : 'YOUR_PAYSTACK_SECRET_KEY_HERE' }}"
+                       autocomplete="new-password"
+                       class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                <p class="text-xs text-slate-400 mt-1">Stored encrypted. Leave blank to keep the current key.</p>
+            </div>
+            <div class="sm:col-span-2">
+                <button type="submit" class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">
+                    Save Paystack keys
+                </button>
+            </div>
+        </form>
+    </div>
 @endsection

@@ -3,17 +3,17 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Customer;
+use App\Models\Expense;
 use App\Models\Ingredient;
 use App\Models\IngredientMovement;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductMovement;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -193,6 +193,10 @@ class DatabaseSeeder extends Seeder
         $this->seedProductionHistory($admin);
 
         $this->seedOrders($admin, $staff);
+
+        $this->seedCustomers();
+
+        $this->seedExpenses($admin);
     }
 
     protected function seedProductionHistory(User $admin): void
@@ -248,7 +252,13 @@ class DatabaseSeeder extends Seeder
     protected function seedOrders(User $admin, User $staff): void
     {
         $products = Product::all();
-        $customers = ['Mia Chen', 'John Doe', 'Sofia Martins', 'Liam Walker', 'Nina Petrova', null, null, 'Oliver King', null, 'Emma Brown'];
+        $customerNames = ['Mia Chen', 'John Doe', 'Sofia Martins', 'Liam Walker', 'Nina Petrova', null, null, 'Oliver King', null, 'Emma Brown'];
+
+        $customerIds = collect($customerNames)
+            ->filter()
+            ->unique()
+            ->mapWithKeys(fn ($name) => [$name => Customer::create(['name' => $name])->id])
+            ->all();
 
         $available = $products->mapWithKeys(fn ($p) => [$p->id => $p->stock_qty])->all();
 
@@ -275,9 +285,12 @@ class DatabaseSeeder extends Seeder
                 $total = round($subtotal - $discount + $tax, 2);
                 $methods = ['cash', 'cash', 'card', 'online'];
 
+                $orderCustomerName = $customerNames[array_rand($customerNames)];
+
                 $order = Order::create([
                     'order_number' => 'ORD-'.now()->subDays($d)->format('ymd').'-'.strtoupper(substr(md5($d.$i), 0, 5)),
-                    'customer_name' => $customers[array_rand($customers)],
+                    'customer_id' => $customerIds[$orderCustomerName] ?? null,
+                    'customer_name' => $orderCustomerName,
                     'subtotal' => $subtotal,
                     'discount' => $discount,
                     'tax' => $tax,
@@ -311,6 +324,46 @@ class DatabaseSeeder extends Seeder
                     ]);
                 }
             }
+        }
+    }
+
+    protected function seedCustomers(): void
+    {
+        $names = ['Grace Adeyemi', 'David Okafor', 'Halima Bello', 'Tunde Bakare', 'Amara Nwosu'];
+
+        foreach ($names as $name) {
+            Customer::firstOrCreate(
+                ['name' => $name],
+                [
+                    'phone' => '555-0'.rand(100, 999),
+                    'email' => strtolower(str_replace(' ', '.', $name)).'@example.com',
+                    'address' => rand(0, 1) ? fake()->streetAddress : null,
+                ]
+            );
+        }
+    }
+
+    protected function seedExpenses(User $admin): void
+    {
+        $defs = [
+            ['title' => 'Electricity bill', 'category' => 'utilities', 'daysAgo' => 1, 'amount' => 85.00],
+            ['title' => 'Water bill', 'category' => 'utilities', 'daysAgo' => 2, 'amount' => 40.00],
+            ['title' => 'Flour delivery - Golden Flour Co.', 'category' => 'ingredients', 'daysAgo' => 3, 'amount' => 320.00],
+            ['title' => 'Packaging boxes', 'category' => 'packaging', 'daysAgo' => 4, 'amount' => 75.50],
+            ['title' => 'Shop rent', 'category' => 'rent', 'daysAgo' => 5, 'amount' => 600.00],
+            ['title' => 'Oven maintenance', 'category' => 'equipment', 'daysAgo' => 7, 'amount' => 120.00],
+            ['title' => 'Social media ads', 'category' => 'marketing', 'daysAgo' => 9, 'amount' => 50.00],
+            ['title' => 'Bakery staff wages', 'category' => 'wages', 'daysAgo' => 12, 'amount' => 450.00],
+        ];
+
+        foreach ($defs as $def) {
+            Expense::create([
+                'title' => $def['title'],
+                'category' => $def['category'],
+                'amount' => $def['amount'],
+                'expense_date' => now()->subDays($def['daysAgo'])->format('Y-m-d'),
+                'user_id' => $admin->id,
+            ]);
         }
     }
 }

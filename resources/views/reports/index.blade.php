@@ -15,6 +15,8 @@
                    class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-amber-500">
         </div>
         <button type="submit" class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">Generate</button>
+        <a href="{{ route('reports.export-orders', request()->query()) }}"
+           class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Export orders (CSV)</a>
     </form>
 
     <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
@@ -33,6 +35,22 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5">
             <p class="text-sm text-slate-500">Units produced</p>
             <p class="mt-1 text-2xl font-bold text-slate-900">{{ number_format($unitsProduced, 0) }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Expenses</p>
+            <p class="mt-1 text-2xl font-bold text-rose-600">-{{ config('pos.currency') }}{{ number_format($expenseTotal, 2) }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Tax collected</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900">{{ config('pos.currency') }}{{ number_format($taxCollected, 2) }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Production cost</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900">{{ config('pos.currency') }}{{ number_format($productionTotal, 2) }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Net profit</p>
+            <p class="mt-1 text-2xl font-bold {{ $netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ config('pos.currency') }}{{ number_format($netProfit, 2) }}</p>
         </div>
     </div>
 
@@ -120,6 +138,36 @@
                     </div>
                 @empty
                     <p class="text-sm text-slate-500">No production in this period.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="font-semibold text-slate-900 mb-3">Payments by Method</h2>
+            <div class="space-y-2 text-sm">
+                @forelse ($paymentBreakdown as $method)
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span class="font-medium text-slate-900">{{ ucfirst($method->payment_method) }} ({{ $method->orders }} orders)</span>
+                        <span class="font-semibold">{{ config('pos.currency') }}{{ number_format($method->total, 2) }}</span>
+                    </div>
+                @empty
+                    <p class="text-slate-500">No sales in this period.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="font-semibold text-slate-900 mb-3">Expenses by Category</h2>
+            <div class="space-y-2 text-sm">
+                @forelse ($expenseByCategory as $row)
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span class="font-medium text-slate-900">{{\App\Models\Expense::CATEGORIES[$row->category] ?? ucfirst($row->category) }}</span>
+                        <span class="font-semibold text-rose-600">-{{ config('pos.currency') }}{{ number_format($row->total, 2) }}</span>
+                    </div>
+                @empty
+                    <p class="text-slate-500">No expenses in this period.</p>
                 @endforelse
             </div>
         </div>

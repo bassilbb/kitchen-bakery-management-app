@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
 use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -27,6 +28,14 @@ class DashboardController extends Controller
         $weekSales = Order::where('status', 'completed')
             ->where('created_at', '>=', $startOfWeek)
             ->sum('total');
+
+        $todayExpenses = Expense::whereDate('expense_date', $today)->sum('amount');
+
+        $paymentBreakdown = Order::where('status', 'completed')
+            ->whereDate('created_at', $today)
+            ->selectRaw('payment_method, SUM(total) as total, COUNT(*) as orders')
+            ->groupBy('payment_method')
+            ->get();
 
         $inventoryValue = Ingredient::all()->sum(fn ($i) => $i->stockValue());
 
@@ -64,10 +73,35 @@ class DashboardController extends Controller
             ];
         });
 
+        // Sales vs expenses for the last 7 days
+        $netChart = collect(range(6, 0))->map(function ($daysAgo) {
+            $date = Carbon::today()->subDays($daysAgo);
+
+            return [
+                'label' => $date->format('D'),
+                'sales' => (float) Order::where('status', 'completed')
+                    ->whereDate('created_at', $date)
+                    ->sum('total'),
+                'expenses' => (float) Expense::whereDate('expense_date', $date)->sum('amount'),
+            ];
+        });
+
+        // Payment methods for the last 7 days for a donut chart
+        $paymentChart = Order::where('status', 'completed')
+            ->where('created_at', '>=', Carbon::today()->subDays(6)->startOfDay())
+            ->selectRaw('payment_method, SUM(total) as total')
+            ->groupBy('payment_method')
+            ->get()
+            ->map(fn ($row) => [
+                'method' => $row->payment_method,
+                'total' => (float) $row->total,
+            ])
+            ->values();
+
         return view('dashboard.index', compact(
             'todaySales', 'todayOrders', 'weekSales', 'inventoryValue', 'productStockValue',
             'lowStockIngredients', 'lowStockProducts', 'recentOrders', 'topProducts',
-            'salesChart', 'todayProduction'
+            'salesChart', 'todayProduction', 'todayExpenses', 'paymentBreakdown', 'netChart', 'paymentChart'
         ));
     }
 }

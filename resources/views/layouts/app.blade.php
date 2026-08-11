@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name', 'Kitchen & Bakery Manager'))</title>
+    <script>window.currencySymbol = @json(config('pos.currency'));</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased">
@@ -43,8 +44,11 @@
 
                 <x-nav-item href="{{ route('orders.index') }}" label="Orders" icon="orders" :active="request()->routeIs('orders.*')" />
 
+                <x-nav-item href="{{ route('customers.index') }}" label="Customers" icon="customers" :active="request()->routeIs('customers.*')" />
+
                 @if (auth()->user()->isAdmin())
                     <x-nav-item href="{{ route('reports.index') }}" label="Reports" icon="reports" :active="request()->routeIs('reports.*')" />
+                    <x-nav-item href="{{ route('expenses.index') }}" label="Expenses" icon="expenses" :active="request()->routeIs('expenses.*')" />
                     <x-nav-item href="{{ route('users.index') }}" label="Users" icon="user" :active="request()->routeIs('users.*')" />
                     <x-nav-item href="{{ route('settings.index') }}" label="Settings" icon="settings" :active="request()->routeIs('settings.*')" />
                 @endif
