@@ -9,11 +9,18 @@ class Order extends Model
 {
     use HasFactory;
 
+    public const STATUS_PENDING = 'pending';
+
     public const STATUS_COMPLETED = 'completed';
+
+    public const STATUS_FAILED = 'failed';
+
     public const STATUS_REFUNDED = 'refunded';
 
+    public const PAYMENT_METHODS = ['cash', 'card', 'online'];
+
     protected $fillable = [
-        'order_number', 'customer_name', 'subtotal', 'discount', 'tax', 'total',
+        'order_number', 'transaction_reference', 'customer_id', 'customer_name', 'subtotal', 'discount', 'tax', 'total',
         'payment_method', 'status', 'user_id', 'note',
     ];
 
@@ -32,6 +39,11 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -40,5 +52,20 @@ class Order extends Model
     public function isRefunded(): bool
     {
         return $this->status === self::STATUS_REFUNDED;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->status === self::STATUS_FAILED;
+    }
+
+    public function isPaid(): bool
+    {
+        return in_array($this->status, [self::STATUS_COMPLETED, self::STATUS_REFUNDED], true);
     }
 }

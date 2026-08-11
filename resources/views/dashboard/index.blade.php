@@ -22,20 +22,123 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
         <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h2 class="font-semibold text-slate-900 mb-4">Sales - Last 7 Days</h2>
-            @php $max = max(1, $salesChart->max('total')); @endphp
-            <div class="flex items-end justify-between gap-2 h-40">
-                @foreach ($salesChart as $point)
-                    <div class="flex flex-col items-center flex-1 gap-1">
-                        <span class="text-xs text-slate-500 font-medium">{{ number_format($point['total'], 0) }}</span>
-                        <div class="w-full bg-amber-100 rounded-t-md flex items-end justify-center overflow-hidden" style="height: 100%">
-                            <div class="w-full bg-amber-500 rounded-t-md" style="height: {{ round($point['total'] / $max * 100) }}%"></div>
+            <p class="text-sm text-slate-500">Today's Expenses</p>
+            <p class="mt-1 text-2xl font-bold text-rose-600">-{{ config('pos.currency') }}{{ number_format($todayExpenses, 2) }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Today's Net</p>
+            <p class="mt-1 text-2xl font-bold text-emerald-600">{{ config('pos.currency') }}{{ number_format($todaySales - $todayExpenses, 2) }}</p>
+        </div>
+        <div class="sm:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="font-semibold text-slate-900 mb-3">Today's Payments</h2>
+            @php
+                $paymentColors = ['cash' => 'bg-emerald-500', 'card' => 'bg-sky-500', 'online' => 'bg-violet-500'];
+                $payMax = max(1, $paymentBreakdown->max('total'));
+            @endphp
+            <div class="space-y-2">
+                @forelse ($paymentBreakdown as $method)
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="w-16 font-medium text-slate-700">{{ ucfirst($method->payment_method) }}</span>
+                        <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full {{ $paymentColors[$method->payment_method] ?? 'bg-slate-400' }}"
+                                 style="width: {{ round($method->total / $payMax * 100) }}%"></div>
                         </div>
-                        <span class="text-xs text-slate-500">{{ $point['label'] }}</span>
+                        <span class="w-24 text-right font-semibold text-slate-700">{{ config('pos.currency') }}{{ number_format($method->total, 2) }}</span>
+                        <span class="w-10 text-right text-xs text-slate-400">{{ $method->orders }} ord</span>
                     </div>
-                @endforeach
+                @empty
+                    <p class="text-sm text-slate-500">No sales today yet.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
+            <h2 class="font-semibold text-slate-900 mb-4">Sales - Last 7 Days</h2>
+            @php
+                $salesConfig = [
+                    'type' => 'line',
+                    'data' => [
+                        'labels' => $salesChart->pluck('label'),
+                        'datasets' => [[
+                            'label' => 'Sales',
+                            'data' => $salesChart->pluck('total'),
+                            'borderColor' => '#f59e0b',
+                            'backgroundColor' => 'rgba(245, 158, 11, 0.15)',
+                            'fill' => true,
+                            'tension' => 0.35,
+                        ]],
+                    ],
+                    'options' => [
+                        'responsive' => true,
+                        'maintainAspectRatio' => false,
+                        'plugins' => ['legend' => ['display' => false]],
+                        'scales' => [
+                            'y' => ['beginAtZero' => true, 'ticks' => ['callback' => 'formatCurrency']],
+                        ],
+                    ],
+                ];
+            @endphp
+            <div class="relative flex-1 min-h-64">
+                <canvas data-chart="{{ json_encode($salesConfig) }}" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
+            <h2 class="font-semibold text-slate-900 mb-4">Sales vs Expenses - Last 7 Days</h2>
+            @php
+                $netConfig = [
+                    'type' => 'bar',
+                    'data' => [
+                        'labels' => $netChart->pluck('label'),
+                        'datasets' => [
+                            ['label' => 'Sales', 'data' => $netChart->pluck('sales'), 'backgroundColor' => '#10b981'],
+                            ['label' => 'Expenses', 'data' => $netChart->pluck('expenses'), 'backgroundColor' => '#f43f5e'],
+                        ],
+                    ],
+                    'options' => [
+                        'responsive' => true,
+                        'maintainAspectRatio' => false,
+                        'scales' => [
+                            'y' => ['beginAtZero' => true, 'ticks' => ['callback' => 'formatCurrency']],
+                        ],
+                    ],
+                ];
+            @endphp
+            <div class="relative flex-1 min-h-64">
+                <canvas data-chart="{{ json_encode($netConfig) }}" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
+            <h2 class="font-semibold text-slate-900 mb-4">Payment Methods - Last 7 Days</h2>
+            @php
+                $paymentConfig = [
+                    'type' => 'doughnut',
+                    'data' => [
+                        'labels' => $paymentChart->pluck('method')->map(fn ($m) => ucfirst($m)),
+                        'datasets' => [[
+                            'data' => $paymentChart->pluck('total'),
+                            'backgroundColor' => ['#10b981', '#0ea5e9', '#8b5cf6'],
+                        ]],
+                    ],
+                    'options' => [
+                        'responsive' => true,
+                        'maintainAspectRatio' => false,
+                        'plugins' => [
+                            'legend' => ['position' => 'bottom'],
+                            'tooltip' => ['callbacks' => ['label' => 'formatCurrencyTooltip']],
+                        ],
+                    ],
+                ];
+            @endphp
+            <div class="relative flex-1 min-h-64">
+                <canvas data-chart="{{ json_encode($paymentConfig) }}" class="absolute inset-0 w-full h-full"></canvas>
             </div>
         </div>
 

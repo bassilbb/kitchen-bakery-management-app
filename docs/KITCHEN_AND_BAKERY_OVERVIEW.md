@@ -24,6 +24,7 @@ Every user is either an **Admin** or a **Staff** member assigned to one departme
 | Dashboard              |         |        |  x   |            |
 | Sell (POS)             |         |        |  x   |            |
 | Orders / Refunds       |         |        |  x   |            |
+| Customers              |         |        |  x   |            |
 | Categories             |         |        |  x   |            |
 | Profile                |         |        |  x   |            |
 | Ingredients            |    x    |        |      |            |
@@ -33,6 +34,7 @@ Every user is either an **Admin** or a **Staff** member assigned to one departme
 | Recipes (bill of materials) |    |    x   |      |            |
 | Baking / Production    |         |    x   |      |            |
 | Reports                |         |        |      |     x      |
+| Expenses               |         |        |      |     x      |
 | Users & permissions    |         |        |      |     x      |
 
 ## How the Kitchen side works
@@ -90,3 +92,35 @@ The departments connect through **stock movements** and the **POS**:
                           |   +-- production usage -----------------+
                           +-- receive stock
 ```
+
+## Customers, held sales and expenses
+
+- **Customers** - Anyone can save customers (name, phone, email, address) and
+  select them at POS checkout. Orders become linked to the customer, and the
+  customer profile shows order history, total spent and average order. Customers
+  are shared by both departments and can be exported to CSV.
+- **Held sales (POS)** - A sale in progress can be put on hold, so the cashier
+  can serve the next customer and resume the held cart later. Held carts check
+  stock levels again before resuming.
+- **Expenses** - Admins record business expenses (rent, utilities, wages,
+  ingredients, packaging, ...). The dashboard shows today's expenses and net,
+  and Reports show expenses for a date range, expenses by category, and net
+  profit (sales minus expenses).
+
+## Online payments (Paystack)
+
+When an admin configures Paystack keys in **Settings**, the POS register shows
+an "Online" payment option. Checking out with "Online":
+
+1. Creates a `pending` order with a unique `transaction_reference` and redirects
+   the customer to Paystack's hosted checkout page.
+2. Stock is **not** deducted at this point, and the cart is kept so the sale can
+   be retried if the customer does not pay.
+3. Paystack redirects back to `/paystack/callback`. The app verifies the
+   transaction with Paystack:
+   - **Success** - order becomes `completed`, stock is deducted, a sale stock
+     movement is logged, and the cart is cleared.
+   - **Failure / abandoned** - order becomes `failed`, cart stays in place, and
+     the cashier is shown an error message.
+4. Orders paid online are marked with their status (pending / completed /
+   failed) and the payment reference in the Orders list and receipts.

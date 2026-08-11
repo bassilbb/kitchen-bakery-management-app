@@ -105,24 +105,79 @@
                         </div>
                     </div>
 
+                    <form method="POST" action="{{ route('pos.hold') }}" id="hold-form">
+                        @csrf
+                    </form>
+
                     <form method="POST" action="{{ route('pos.checkout') }}" class="space-y-3">
                         @csrf
-                        <input type="text" name="customer_name" placeholder="Customer name (optional)"
+                        <select name="customer_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500">
+                            <option value="">Walk-in customer</option>
+                            @foreach ($customers as $customer)
+                                <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                            @endforeach
+                        </select>
+                        <input type="text" name="customer_name" placeholder="Or new customer name"
                                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500">
                         <input type="number" name="discount" value="0" min="0" step="0.01" placeholder="Discount amount"
                                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500">
                         <select name="payment_method" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500">
                             <option value="cash">Cash</option>
                             <option value="card">Card</option>
-                            <option value="online">Online</option>
+                            <option value="online" @disabled(! $paystackConfigured)>Online</option>
                         </select>
-                        <button type="submit"
-                                class="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">
-                            Complete Sale
-                        </button>
+                        @if (! $paystackConfigured)
+                            <p class="text-xs text-amber-600">Online payments need Paystack keys. An admin can add them in
+                                <a href="{{ route('settings.index') }}" class="underline">Settings</a>.</p>
+                        @endif
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="submit"
+                                    class="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">
+                                Complete Sale
+                            </button>
+                            <button type="submit" form="hold-form"
+                                    class="rounded-lg bg-slate-600 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-500">
+                                Hold Sale
+                            </button>
+                        </div>
                     </form>
                 @endif
             </div>
+
+            @if (! empty($heldCarts))
+                <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4">
+                    <h2 class="font-semibold text-slate-900 mb-3">Held Sales</h2>
+                    <div class="space-y-3">
+                        @foreach ($heldCarts as $held)
+                            <div class="border border-slate-100 rounded-lg p-3">
+                                <div class="flex items-center justify-between mb-1">
+                                    <p class="text-sm font-medium text-slate-900">{{ $held['label'] }}</p>
+                                    <span class="text-xs text-slate-400">{{ $held['held_at'] }}</span>
+                                </div>
+                                <p class="text-xs text-slate-500">
+                                    @foreach ($held['items'] as $item)
+                                        {{ $item['qty'] }}x {{ $item['name'] }}@if (! $loop->last), @endif
+                                    @endforeach
+                                </p>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-sm font-bold">{{ config('pos.currency') }}{{ number_format($held['total'], 2) }}</span>
+                                    <div class="flex gap-2">
+                                        <form method="POST" action="{{ route('pos.resume', $held['key']) }}">
+                                            @csrf
+                                            <button type="submit" class="text-amber-600 hover:text-amber-500 text-sm font-medium">Resume</button>
+                                        </form>
+                                        <form method="POST" action="{{ route('pos.discard', $held['key']) }}"
+                                              onsubmit="return confirm('Discard this held sale?')">
+                                            @csrf
+                                            <button type="submit" class="text-rose-600 hover:text-rose-500 text-sm font-medium">Discard</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 @endsection

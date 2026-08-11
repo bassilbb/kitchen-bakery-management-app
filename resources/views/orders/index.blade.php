@@ -11,6 +11,8 @@
                     class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm">
                 <option value="">All statuses</option>
                 <option value="completed" @selected(request('status') === 'completed')>Completed</option>
+                <option value="pending" @selected(request('status') === 'pending')>Pending</option>
+                <option value="failed" @selected(request('status') === 'failed')>Failed</option>
                 <option value="refunded" @selected(request('status') === 'refunded')>Refunded</option>
             </select>
             <input type="date" name="from" value="{{ request('from') }}"
@@ -46,7 +48,15 @@
                             <td class="px-5 py-3 text-right font-medium">{{ config('pos.currency') }}{{ number_format($order->total, 2) }}</td>
                             <td class="px-5 py-3">{{ ucfirst($order->payment_method) }}</td>
                             <td class="px-5 py-3">
-                                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {{ $order->isRefunded() ? 'bg-slate-100 text-slate-500' : 'bg-emerald-100 text-emerald-700' }}">
+                                @php
+                                    $badge = [
+                                        'completed' => 'bg-emerald-100 text-emerald-700',
+                                        'pending' => 'bg-amber-100 text-amber-700',
+                                        'failed' => 'bg-rose-100 text-rose-700',
+                                        'refunded' => 'bg-slate-100 text-slate-500',
+                                    ][$order->status] ?? 'bg-slate-100 text-slate-500';
+                                @endphp
+                                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {{ $badge }}">
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </td>
