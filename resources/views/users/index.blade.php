@@ -23,8 +23,8 @@
                                 <p class="text-xs text-slate-400">{{ $user->email }}</p>
                             </td>
                             <td class="px-5 py-3">
-                                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {{ $user->isAdmin() ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600' }}">
-                                    {{ ucfirst($user->role) }}
+                                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {{ $user->isAdmin() ? 'bg-amber-100 text-amber-700' : ($user->isCashier() ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600') }}">
+                                    {{ $user->roleLabel() }}
                                 </span>
                             </td>
                             <td class="px-5 py-3">{{ $user->departmentLabel() ?: 'All areas' }}</td>
@@ -34,11 +34,12 @@
                                     @csrf
                                     @method('PUT')
                                     <select name="role" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-amber-500">
-                                        <option value="staff" @selected(! $user->isAdmin())>Staff</option>
-                                        <option value="admin" @selected($user->isAdmin())>Admin</option>
+                                        @foreach (\App\Models\User::ROLES as $key => $label)
+                                            <option value="{{ $key }}" @selected($user->role === $key)>{{ $label }}</option>
+                                        @endforeach
                                     </select>
-                                    <select name="department" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-amber-500" {{ $user->isAdmin() ? 'disabled' : '' }}>
-                                        @if ($user->isAdmin())
+                                    <select name="department" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-amber-500" {{ $user->isAdmin() || $user->isCashier() ? 'disabled' : '' }}>
+                                        @if ($user->isAdmin() || $user->isCashier())
                                             <option value="" selected>All areas</option>
                                         @else
                                             @foreach (\App\Models\User::DEPARTMENTS as $key => $label)
@@ -59,10 +60,11 @@
     <div class="mt-4 bg-white rounded-xl border border-slate-200 p-5">
         <h2 class="font-semibold text-slate-900 mb-2">How permissions work</h2>
         <ul class="text-sm text-slate-600 space-y-1 list-disc list-inside">
-            <li><strong>Admin</strong> - access to every module including Reports and this Users page.</li>
-            <li><strong>Kitchen staff</strong> - Ingredients, Suppliers and stock receiving only.</li>
-            <li><strong>Bakery staff</strong> - Products, Recipes and Baking/Production only.</li>
-            <li><strong>Everyone</strong> - Dashboard, Sell (POS), Orders, Categories and Profile.</li>
+            <li><strong>Admin</strong> - access to every module including Reports, Expenses, Users and Settings.</li>
+            <li><strong>Cashier</strong> - Dashboard, Sell (POS), Orders, Customers and Profile only. Handles all sales.</li>
+            <li><strong>Kitchen staff</strong> - Dashboard, Ingredients, Suppliers and Profile only.</li>
+            <li><strong>Bakery staff</strong> - Dashboard, Products, Recipes, Baking/Production, Categories and Profile only.</li>
+            <li><strong>Separation</strong> - Kitchen and bakery staff never see each other's inventory, and only cashiers/admins can process sales.</li>
         </ul>
     </div>
 @endsection

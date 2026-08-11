@@ -15,7 +15,7 @@ class CustomerTest extends TestCase
 
     private function user(): User
     {
-        return User::factory()->create();
+        return User::factory()->create(['role' => 'cashier', 'department' => null]);
     }
 
     public function test_guest_cannot_view_customers(): void
@@ -23,7 +23,7 @@ class CustomerTest extends TestCase
         $this->get('/customers')->assertRedirect('/login');
     }
 
-    public function test_staff_can_view_customers(): void
+    public function test_cashier_can_view_customers(): void
     {
         $this->actingAs($this->user())->get('/customers')->assertOk();
     }

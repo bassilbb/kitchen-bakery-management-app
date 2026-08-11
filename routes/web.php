@@ -31,35 +31,35 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 Route::middleware('auth')->group(function () {
-    // Shared modules (dashboard, sales, orders, categories, profile)
+    // Shared modules (dashboard, profile) for every logged-in user.
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
-    Route::post('/pos/add', [PosController::class, 'add'])->name('pos.add');
-    Route::post('/pos/update-qty', [PosController::class, 'updateQty'])->name('pos.update-qty');
-    Route::post('/pos/remove', [PosController::class, 'remove'])->name('pos.remove');
-    Route::post('/pos/clear', [PosController::class, 'clear'])->name('pos.clear');
-    Route::post('/pos/hold', [PosController::class, 'hold'])->name('pos.hold');
-    Route::post('/pos/resume/{key}', [PosController::class, 'resume'])->name('pos.resume');
-    Route::post('/pos/discard/{key}', [PosController::class, 'discard'])->name('pos.discard');
-    Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
-    Route::get('/pos/{order}', [PosController::class, 'show'])->name('pos.show');
-
-    Route::get('/paystack/callback', [PosController::class, 'paystackCallback'])->name('paystack.callback');
-
-    Route::get('/customers/export', [CustomerController::class, 'export'])->name('customers.export');
-    Route::resource('customers', CustomerController::class);
-
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    Route::post('/orders/{order}/refund', [OrderController::class, 'refund'])->name('orders.refund');
-
-    Route::resource('categories', CategoryController::class)->only(['index', 'update', 'destroy']);
-    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+    // Sales modules - cashiers and admins only.
+    Route::middleware('sales')->group(function () {
+        Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
+        Route::post('/pos/add', [PosController::class, 'add'])->name('pos.add');
+        Route::post('/pos/update-qty', [PosController::class, 'updateQty'])->name('pos.update-qty');
+        Route::post('/pos/remove', [PosController::class, 'remove'])->name('pos.remove');
+        Route::post('/pos/clear', [PosController::class, 'clear'])->name('pos.clear');
+        Route::post('/pos/hold', [PosController::class, 'hold'])->name('pos.hold');
+        Route::post('/pos/resume/{key}', [PosController::class, 'resume'])->name('pos.resume');
+        Route::post('/pos/discard/{key}', [PosController::class, 'discard'])->name('pos.discard');
+        Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+        Route::get('/pos/{order}', [PosController::class, 'show'])->name('pos.show');
+
+        Route::get('/paystack/callback', [PosController::class, 'paystackCallback'])->name('paystack.callback');
+
+        Route::get('/customers/export', [CustomerController::class, 'export'])->name('customers.export');
+        Route::resource('customers', CustomerController::class);
+
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/refund', [OrderController::class, 'refund'])->name('orders.refund');
+    });
 
     // Kitchen department modules
     Route::middleware('department:kitchen')->group(function () {
@@ -82,6 +82,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/productions', [ProductionController::class, 'store'])->name('productions.store');
         Route::get('/productions/{production}', [ProductionController::class, 'show'])->name('productions.show');
         Route::delete('/productions/{production}', [ProductionController::class, 'destroy'])->name('productions.destroy');
+
+        Route::resource('categories', CategoryController::class)->only(['index', 'update', 'destroy']);
+        Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     });
 
     // Admin-only modules

@@ -5,37 +5,44 @@ connect, and who can see what.
 
 ## Departments and permissions
 
-Every user is either an **Admin** or a **Staff** member assigned to one department.
+Every user is either an **Admin**, a **Cashier**, or a **Staff** member assigned to one department.
 
 | User            | Role    | Department | Sees                                                                  |
 |-----------------|---------|------------|-----------------------------------------------------------------------|
 | Admin           | admin   | -          | Everything, including Reports and the Users page                      |
-| Kitchen staff   | staff   | kitchen    | Dashboard, Sell (POS), Orders, Categories, Profile, **Ingredients**, **Suppliers** |
-| Bakery staff    | staff   | bakery     | Dashboard, Sell (POS), Orders, Categories, Profile, **Products**, **Recipes**, **Baking / Production** |
+| Cashier         | cashier | -          | Dashboard, Sell (POS), Orders, Customers, Profile                     |
+| Kitchen staff   | staff   | kitchen    | Dashboard, Profile, **Ingredients**, **Suppliers**                    |
+| Bakery staff    | staff   | bakery     | Dashboard, Profile, **Products**, **Recipes**, **Baking / Production**, **Categories** |
 
-- Reports and the Users (permissions) page are **admin only** - staff can never see them.
+- Reports, Expenses and the Users (permissions) page are **admin only**.
+- Sales are handled **only by cashiers and admins** - kitchen and bakery staff
+  never see the POS, Orders or Customers.
+- Kitchen staff only see their ingredients/suppliers; bakery staff only see
+  their products/recipes/production/categories; the two never see each other's
+  inventory.
 - The sidebar adapts automatically to what the logged-in user may access.
 - Admins assign role + department on the **Users** page.
 
 ### Feature to department map
 
-| Module                 | Kitchen | Bakery | Both | Admin only |
-|------------------------|:-------:|:------:|:----:|:----------:|
-| Dashboard              |         |        |  x   |            |
-| Sell (POS)             |         |        |  x   |            |
-| Orders / Refunds       |         |        |  x   |            |
-| Customers              |         |        |  x   |            |
-| Categories             |         |        |  x   |            |
-| Profile                |         |        |  x   |            |
-| Ingredients            |    x    |        |      |            |
-| Suppliers              |    x    |        |      |            |
-| Receive stock / purchases |  x    |        |      |            |
-| Products               |         |    x   |      |            |
-| Recipes (bill of materials) |    |    x   |      |            |
-| Baking / Production    |         |    x   |      |            |
-| Reports                |         |        |      |     x      |
-| Expenses               |         |        |      |     x      |
-| Users & permissions    |         |        |      |     x      |
+| Module                 | Kitchen | Bakery | Cashier | Admin only |
+|------------------------|:-------:|:------:|:-------:|:----------:|
+| Dashboard              |    x    |   x    |    x    |            |
+| Profile                |    x    |   x    |    x    |            |
+| Sell (POS)             |         |        |    x    |            |
+| Orders / Refunds       |         |        |    x    |            |
+| Customers              |         |        |    x    |            |
+| Categories             |         |    x   |         |            |
+| Ingredients            |    x    |        |         |            |
+| Suppliers              |    x    |        |         |            |
+| Receive stock / purchases |  x    |        |         |            |
+| Products               |         |    x   |         |            |
+| Recipes (bill of materials) |    |    x   |         |            |
+| Baking / Production    |         |    x   |         |            |
+| Reports                |         |        |         |     x      |
+| Expenses               |         |        |         |     x      |
+| Users & permissions    |         |        |         |     x      |
+| Settings               |         |        |         |     x      |
 
 ## How the Kitchen side works
 
@@ -81,10 +88,10 @@ The departments connect through **stock movements** and the **POS**:
 
 - The bakery consumes ingredients (kitchen stock) when it produces goods.
 - The kitchen replenishes those ingredients by receiving stock from suppliers.
-- Products (bakery output) are sold at the **Sell (POS)** register, which deducts
-  finished stock and creates orders that both departments can view.
-- The dashboard and reports (admin) surface low stock on both sides so nobody
-  runs out of flour or croissants.
+- Products (bakery output) are sold by cashiers at the **Sell (POS)** register,
+  which deducts finished stock and creates orders.
+- The dashboard surfaces low stock per department, and reports (admin) show the
+  financial picture, so nobody runs out of flour or croissants.
 
 ```
   Supplier --> (Kitchen) Ingredient stock --recipe--> (Bakery) Product stock --> (POS) Sale
@@ -95,10 +102,10 @@ The departments connect through **stock movements** and the **POS**:
 
 ## Customers, held sales and expenses
 
-- **Customers** - Anyone can save customers (name, phone, email, address) and
+- **Customers** - Cashiers save customers (name, phone, email, address) and
   select them at POS checkout. Orders become linked to the customer, and the
   customer profile shows order history, total spent and average order. Customers
-  are shared by both departments and can be exported to CSV.
+  can be exported to CSV.
 - **Held sales (POS)** - A sale in progress can be put on hold, so the cashier
   can serve the next customer and resume the held cart later. Held carts check
   stock levels again before resuming.

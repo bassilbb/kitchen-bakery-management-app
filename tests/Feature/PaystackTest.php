@@ -18,7 +18,7 @@ class PaystackTest extends TestCase
 
     private function user(): User
     {
-        return User::factory()->create();
+        return User::factory()->create(['role' => 'cashier', 'department' => null]);
     }
 
     private function configurePaystack(): void

@@ -11,9 +11,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
+
+    public const ROLE_CASHIER = 'cashier';
+
     public const ROLE_STAFF = 'staff';
 
+    public const ROLES = [
+        self::ROLE_ADMIN => 'Admin',
+        self::ROLE_CASHIER => 'Cashier',
+        self::ROLE_STAFF => 'Staff',
+    ];
+
     public const DEPT_KITCHEN = 'kitchen';
+
     public const DEPT_BAKERY = 'bakery';
 
     public const DEPARTMENTS = [
@@ -47,9 +57,14 @@ class User extends Authenticatable
         return $this->role === self::ROLE_ADMIN;
     }
 
+    public function isCashier(): bool
+    {
+        return $this->role === self::ROLE_CASHIER;
+    }
+
     public function isStaff(): bool
     {
-        return $this->role !== self::ROLE_ADMIN;
+        return $this->role === self::ROLE_STAFF;
     }
 
     public function isKitchen(): bool
@@ -70,6 +85,19 @@ class User extends Authenticatable
     public function canAccessBakery(): bool
     {
         return $this->isAdmin() || $this->isBakery();
+    }
+
+    /**
+     * Cashiers (and admins) are the only users who process sales.
+     */
+    public function canAccessSales(): bool
+    {
+        return $this->isAdmin() || $this->isCashier();
+    }
+
+    public function roleLabel(): ?string
+    {
+        return self::ROLES[$this->role] ?? ucfirst($this->role);
     }
 
     public function departmentLabel(): ?string

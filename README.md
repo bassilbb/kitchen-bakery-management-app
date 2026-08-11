@@ -19,7 +19,7 @@ A simple, all-in-one Laravel application for running a kitchen and bakery busine
 - **Reports** - Date-range sales totals, discounts, tax, expenses, net profit, payment-method breakdown, daily sales, top products, production history, most-used ingredients, inventory value, and CSV order export.
 - **Stock Movements** - Complete audit trail of every purchase, usage, sale, and manual adjustment for ingredients and products.
 - **Authentication** - Register, login, and profile/password management. The first registered user becomes the admin.
-- **Role-based permissions** - Admins see everything. Kitchen staff see only Ingredients/Suppliers; Bakery staff see only Products/Recipes/Production. Reports, Expenses, and user management are admin-only. See `docs/KITCHEN_AND_BAKERY_OVERVIEW.md`.
+- **Role-based permissions** - Admins see everything. Cashiers handle all sales (Dashboard, Sell/POS, Orders, Customers, Profile). Kitchen staff see only Ingredients/Suppliers; Bakery staff see only Products/Recipes/Production/Categories. Reports, Expenses, and user management are admin-only. See `docs/KITCHEN_AND_BAKERY_OVERVIEW.md`.
 - **Company settings** - Admins can upload the company logo and set the company name from Settings; they appear in the sidebar and on the login page.
 - **Online payments (Paystack)** - Admins add their Paystack keys in Settings to let cashiers offer "Online" payment at the POS. The sale is created as a pending order and the customer is redirected to the Paystack checkout; stock is deducted only once Paystack confirms the payment, and a failed/abandoned payment leaves the cart intact to retry.
 
@@ -59,6 +59,7 @@ Then open `http://localhost:8000`.
 | Role              | Department | Email                 | Password |
 |-------------------|------------|-----------------------|----------|
 | Admin             | All areas  | admin@example.com     | password |
+| Cashier           | All areas  | cashier@example.com   | password |
 | Staff (Bakery)    | Bakery     | staff@example.com     | password |
 | Staff (Kitchen)   | Kitchen    | kitchen@example.com   | password |
 

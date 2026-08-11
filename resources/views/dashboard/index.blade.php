@@ -160,6 +160,7 @@
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
+        @if (auth()->user()->canAccessSales())
         <div class="xl:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="font-semibold text-slate-900">Recent Orders</h2>
@@ -194,8 +195,9 @@
                 </table>
             </div>
         </div>
+        @endif
 
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="{{ auth()->user()->canAccessSales() ? '' : 'xl:col-span-3' }} bg-white rounded-xl border border-slate-200 p-5">
             <h2 class="font-semibold text-slate-900 mb-4">Low Stock Alerts</h2>
 
             @if (auth()->user()->canAccessKitchen())
@@ -223,7 +225,9 @@
             @endif
 
             @if (! auth()->user()->canAccessKitchen() && ! auth()->user()->canAccessBakery())
-                <p class="text-sm text-slate-500 py-1.5">Ask an admin to assign you a department.</p>
+                <p class="text-sm text-slate-500 py-1.5">
+                    {{ auth()->user()->isCashier() ? 'You do not manage stock.' : 'Ask an admin to assign you a department.' }}
+                </p>
             @endif
         </div>
     </div>
