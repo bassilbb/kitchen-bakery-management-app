@@ -21,6 +21,7 @@ A simple, all-in-one Laravel application for running a kitchen and bakery busine
 - **Authentication** - Register, login, and profile/password management. The first registered user becomes the admin.
 - **Role-based permissions** - Admins see everything. Kitchen staff see only Ingredients/Suppliers; Bakery staff see only Products/Recipes/Production. Reports, Expenses, and user management are admin-only. See `docs/KITCHEN_AND_BAKERY_OVERVIEW.md`.
 - **Company settings** - Admins can upload the company logo and set the company name from Settings; they appear in the sidebar and on the login page.
+- **Online payments (Paystack)** - Admins add their Paystack keys in Settings to let cashiers offer "Online" payment at the POS. The sale is created as a pending order and the customer is redirected to the Paystack checkout; stock is deducted only once Paystack confirms the payment, and a failed/abandoned payment leaves the cart intact to retry.
 
 ## Requirements
 
@@ -74,6 +75,22 @@ You can also change the currency symbol (default Naira `₦`):
 ```
 POS_CURRENCY=$
 ```
+
+### Paystack (online payments)
+
+To enable the "Online" payment option at the POS register:
+
+1. Sign up at [Paystack](https://paystack.com) and open **Settings > API Keys**.
+2. Log in to this app as an admin and go to **Settings**.
+3. Paste your **Public key** (`YOUR_PAYSTACK_PUBLIC_KEY_HERE`) and **Secret key** (`YOUR_PAYSTACK_SECRET_KEY_HERE`) and save. The secret key is stored encrypted.
+4. On the POS page, choose **Online** as the payment method to send the customer to Paystack's checkout page.
+
+Notes:
+
+- The order is created with a `pending` status while the customer is paying; it becomes `completed` only after Paystack verifies the payment, at which point stock is deducted.
+- If the customer abandons or fails the payment, the order is marked `failed` and the cart stays in place so you can retry or switch to cash.
+- The amount sent to Paystack is the order total in the smallest currency unit (kobo), so the total is always rounded to the nearest Naira.
+- For local testing, Paystack also provides **test keys** and a test card mode.
 
 ## Tests
 

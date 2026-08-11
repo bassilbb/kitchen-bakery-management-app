@@ -124,8 +124,12 @@
                         <select name="payment_method" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500">
                             <option value="cash">Cash</option>
                             <option value="card">Card</option>
-                            <option value="online">Online</option>
+                            <option value="online" @disabled(! $paystackConfigured)>Online</option>
                         </select>
+                        @if (! $paystackConfigured)
+                            <p class="text-xs text-amber-600">Online payments need Paystack keys. An admin can add them in
+                                <a href="{{ route('settings.index') }}" class="underline">Settings</a>.</p>
+                        @endif
                         <div class="grid grid-cols-2 gap-2">
                             <button type="submit"
                                     class="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">

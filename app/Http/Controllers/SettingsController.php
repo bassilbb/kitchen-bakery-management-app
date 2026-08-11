@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
@@ -18,6 +19,8 @@ class SettingsController extends Controller
         $data = $request->validate([
             'company_name' => ['nullable', 'string', 'max:100'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
+            'paystack_public_key' => ['nullable', 'string', 'max:255'],
+            'paystack_secret_key' => ['nullable', 'string', 'max:255'],
         ]);
 
         if (isset($data['company_name'])) {
@@ -32,6 +35,15 @@ class SettingsController extends Controller
 
             $path = $request->file('logo')->store('logos', 'public');
             Setting::set(Setting::LOGO_PATH_KEY, $path);
+        }
+
+        if (array_key_exists('paystack_public_key', $data)) {
+            Setting::set(Setting::PAYSTACK_PUBLIC_KEY, trim($data['paystack_public_key']));
+        }
+
+        $secret = trim($data['paystack_secret_key'] ?? '');
+        if ($secret !== '') {
+            Setting::set(Setting::PAYSTACK_SECRET_KEY, Crypt::encryptString($secret));
         }
 
         return back()->with('success', 'Company settings updated.');

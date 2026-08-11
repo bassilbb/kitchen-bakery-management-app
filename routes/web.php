@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
     Route::get('/pos/{order}', [PosController::class, 'show'])->name('pos.show');
 
+    Route::get('/paystack/callback', [PosController::class, 'paystackCallback'])->name('paystack.callback');
+
     Route::get('/customers/export', [CustomerController::class, 'export'])->name('customers.export');
     Route::resource('customers', CustomerController::class);
 

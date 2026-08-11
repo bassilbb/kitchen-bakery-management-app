@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductMovement;
+use App\Services\PaystackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -33,8 +34,9 @@ class PosController extends Controller
         $categories = Category::orderBy('name')->get();
         $customers = Customer::orderBy('name')->get();
         $heldCarts = $this->heldCarts();
+        $paystackConfigured = (new PaystackService)->isConfigured();
 
-        return view('pos.index', compact('products', 'cart', 'categories', 'customers', 'heldCarts'));
+        return view('pos.index', compact('products', 'cart', 'categories', 'customers', 'heldCarts', 'paystackConfigured'));
     }
 
     protected function heldCarts(): array
@@ -247,6 +249,10 @@ class PosController extends Controller
         $tax = round(($subtotal - $discount) * (config('pos.tax_rate', 0) / 100), 2);
         $total = round($subtotal - $discount + $tax, 2);
 
+        if ($request->payment_method === 'online') {
+            return $this->initializeOnlinePayment($request, $items, $customer, $subtotal, $discount, $tax, $total);
+        }
+
         $order = DB::transaction(function () use ($items, $subtotal, $discount, $tax, $total, $request, $customer) {
             $order = Order::create([
                 'order_number' => $this->nextOrderNumber(),
@@ -290,6 +296,113 @@ class PosController extends Controller
         session()->forget('pos.cart');
 
         return redirect()->route('pos.show', $order)->with('success', 'Order completed successfully.');
+    }
+
+    protected function initializeOnlinePayment(Request $request, array $items, ?Customer $customer, float $subtotal, float $discount, float $tax, float $total)
+    {
+        $paystack = new PaystackService;
+
+        if (! $paystack->isConfigured()) {
+            return back()->with('error', 'Online payments are not configured. Ask an admin to add the Paystack keys in Settings.');
+        }
+
+        $order = Order::create([
+            'order_number' => $this->nextOrderNumber(),
+            'transaction_reference' => $this->nextReference(),
+            'customer_id' => $customer?->id,
+            'customer_name' => $request->customer_name ?: $customer?->name,
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'tax' => $tax,
+            'total' => $total,
+            'payment_method' => 'online',
+            'status' => Order::STATUS_PENDING,
+            'user_id' => auth()->id(),
+            'note' => $request->note,
+        ]);
+
+        foreach ($items as $item) {
+            $order->items()->create([
+                'product_id' => $item['product']->id,
+                'product_name' => $item['product']->name,
+                'quantity' => $item['qty'],
+                'unit_price' => $item['product']->price,
+                'line_total' => $item['line_total'],
+            ]);
+        }
+
+        $email = $customer?->email ?: auth()->user()->email;
+        $authorizationUrl = $paystack->initialize($order, $email, route('paystack.callback'));
+
+        if (! $authorizationUrl) {
+            $order->update(['status' => Order::STATUS_FAILED]);
+
+            return back()->with('error', 'Could not start the payment with Paystack. Try again or use cash.');
+        }
+
+        // Keep the cart until payment is confirmed so a failed/abandoned
+        // payment can be retried. It is cleared in the callback on success.
+        return redirect()->away($authorizationUrl);
+    }
+
+    public function paystackCallback(Request $request)
+    {
+        $reference = $request->query('reference') ?: $request->query('trxref');
+
+        if (! $reference) {
+            return redirect()->route('pos.index')->with('error', 'No payment reference was returned.');
+        }
+
+        $order = Order::where('transaction_reference', $reference)->first();
+
+        if (! $order) {
+            return redirect()->route('pos.index')->with('error', 'We could not find an order for that payment reference.');
+        }
+
+        if ($order->isPending() === false && $order->isFailed() === false) {
+            session()->forget('pos.cart');
+
+            return redirect()->route('pos.show', $order)->with('success', 'Payment already confirmed.');
+        }
+
+        $result = (new PaystackService)->verify($reference);
+
+        if (! $result['status']) {
+            if ($order->isPending()) {
+                $order->update(['status' => Order::STATUS_FAILED]);
+            }
+
+            return redirect()->route('pos.index')
+                ->with('error', 'Payment not completed'.($result['message'] ? ': '.$result['message'] : '.').' Your cart is still there.');
+        }
+
+        DB::transaction(function () use ($order) {
+            $order->update(['status' => Order::STATUS_COMPLETED]);
+
+            foreach ($order->items as $item) {
+                $item->product?->decrement('stock_qty', $item->quantity);
+
+                if ($item->product) {
+                    ProductMovement::create([
+                        'product_id' => $item->product->id,
+                        'type' => ProductMovement::TYPE_SALE,
+                        'quantity' => -$item->quantity,
+                        'reference' => $order->order_number,
+                        'user_id' => $order->user_id,
+                        'created_at' => now(),
+                    ]);
+                }
+            }
+        });
+
+        session()->forget('pos.cart');
+
+        return redirect()->route('pos.show', $order)->with('success', 'Payment received. Order completed.');
+    }
+
+    protected function nextReference(): string
+    {
+        return 'PS-'.now()->format('ymd').'-'.strtoupper(substr(uniqid(), -7));
     }
 
     protected function nextOrderNumber(): string

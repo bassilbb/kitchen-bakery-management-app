@@ -8,7 +8,15 @@
             <div class="text-center border-b border-dashed border-slate-300 pb-6">
                 <p class="text-xl font-bold text-slate-900">Kitchen &amp; Bakery</p>
                 <p class="text-sm text-slate-500 mt-1">Receipt / Invoice</p>
-                <p class="mt-3 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $order->isRefunded() ? 'bg-slate-100 text-slate-600' : 'bg-emerald-100 text-emerald-700' }}">
+                @php
+                    $badge = [
+                        'completed' => 'bg-emerald-100 text-emerald-700',
+                        'pending' => 'bg-amber-100 text-amber-700',
+                        'failed' => 'bg-rose-100 text-rose-700',
+                        'refunded' => 'bg-slate-100 text-slate-600',
+                    ][$order->status] ?? 'bg-slate-100 text-slate-600';
+                @endphp
+                <p class="mt-3 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $badge }}">
                     {{ ucfirst($order->status) }}
                 </p>
             </div>
@@ -34,6 +42,12 @@
                     <p class="text-slate-500">Served by</p>
                     <p class="font-medium text-slate-900">{{ $order->user?->name ?: '-' }}</p>
                 </div>
+                @if ($order->transaction_reference)
+                    <div class="col-span-2">
+                        <p class="text-slate-500">Payment reference</p>
+                        <p class="font-mono font-medium text-slate-900">{{ $order->transaction_reference }}</p>
+                    </div>
+                @endif
             </div>
 
             <table class="w-full text-sm border-t border-dashed border-slate-300">
