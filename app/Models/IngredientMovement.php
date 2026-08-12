@@ -10,7 +10,11 @@ class IngredientMovement extends Model
     use HasFactory;
 
     public const TYPE_PURCHASE = 'purchase';
+
     public const TYPE_USAGE = 'usage';
+
+    public const TYPE_ISSUE = 'issue';
+
     public const TYPE_ADJUSTMENT = 'adjustment';
 
     public $timestamps = false;

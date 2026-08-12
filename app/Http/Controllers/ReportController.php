@@ -79,7 +79,10 @@ class ReportController extends Controller
         $productionTotal = $productions->sum('total_cost');
         $unitsProduced = $productions->sum('quantity');
 
-        $usageByIngredient = IngredientMovement::where('type', IngredientMovement::TYPE_USAGE)
+        $usageByIngredient = IngredientMovement::whereIn('type', [
+            IngredientMovement::TYPE_USAGE,
+            IngredientMovement::TYPE_ISSUE,
+        ])
             ->whereBetween('created_at', [$from, $to])
             ->with('ingredient')
             ->get()

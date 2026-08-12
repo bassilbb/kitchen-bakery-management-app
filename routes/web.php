@@ -10,6 +10,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\ProductionRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
@@ -78,13 +79,25 @@ Route::middleware('auth')->group(function () {
         Route::post('/products/{product}/recipe', [ProductController::class, 'saveRecipe'])->name('products.recipe');
 
         Route::get('/productions', [ProductionController::class, 'index'])->name('productions.index');
-        Route::get('/productions/create', [ProductionController::class, 'create'])->name('productions.create');
-        Route::post('/productions', [ProductionController::class, 'store'])->name('productions.store');
         Route::get('/productions/{production}', [ProductionController::class, 'show'])->name('productions.show');
         Route::delete('/productions/{production}', [ProductionController::class, 'destroy'])->name('productions.destroy');
 
         Route::resource('categories', CategoryController::class)->only(['index', 'update', 'destroy']);
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    });
+
+    // Ingredient request workflow - both kitchen and bakery staff take part.
+    Route::middleware('department:kitchen,bakery')->group(function () {
+        Route::get('/production-requests', [ProductionRequestController::class, 'index'])->name('production-requests.index');
+        Route::get('/production-requests/create', [ProductionRequestController::class, 'create'])->name('production-requests.create');
+        Route::post('/production-requests', [ProductionRequestController::class, 'store'])->name('production-requests.store');
+        Route::get('/production-requests/{productionRequest}', [ProductionRequestController::class, 'show'])->name('production-requests.show');
+        Route::post('/production-requests/{productionRequest}/submit', [ProductionRequestController::class, 'submit'])->name('production-requests.submit');
+        Route::post('/production-requests/{productionRequest}/cancel', [ProductionRequestController::class, 'cancel'])->name('production-requests.cancel');
+        Route::post('/production-requests/{productionRequest}/approve', [ProductionRequestController::class, 'approve'])->name('production-requests.approve');
+        Route::post('/production-requests/{productionRequest}/reject', [ProductionRequestController::class, 'reject'])->name('production-requests.reject');
+        Route::post('/production-requests/{productionRequest}/issue', [ProductionRequestController::class, 'issue'])->name('production-requests.issue');
+        Route::post('/production-requests/{productionRequest}/produce', [ProductionRequestController::class, 'produce'])->name('production-requests.produce');
     });
 
     // Admin-only modules

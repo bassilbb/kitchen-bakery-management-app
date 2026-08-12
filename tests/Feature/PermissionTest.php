@@ -31,6 +31,7 @@ class PermissionTest extends TestCase
         $this->get('/profile')->assertOk();
         $this->get('/ingredients')->assertOk();
         $this->get('/suppliers')->assertOk();
+        $this->get('/production-requests')->assertOk();
 
         $this->get('/products')->assertForbidden();
         $this->get('/productions')->assertForbidden();
@@ -53,6 +54,7 @@ class PermissionTest extends TestCase
         $this->get('/products')->assertOk();
         $this->get('/productions')->assertOk();
         $this->get('/categories')->assertOk();
+        $this->get('/production-requests')->assertOk();
 
         $this->get('/ingredients')->assertForbidden();
         $this->get('/suppliers')->assertForbidden();

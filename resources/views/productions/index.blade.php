@@ -17,8 +17,8 @@
             <input type="date" name="to" value="{{ request('to') }}"
                    class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm">
         </form>
-        <a href="{{ route('productions.create') }}"
-           class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">+ New Production Batch</a>
+        <a href="{{ route('production-requests.create') }}"
+           class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">+ New Production Request</a>
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">

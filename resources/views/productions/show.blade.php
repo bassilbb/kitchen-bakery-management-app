@@ -16,6 +16,14 @@
             <dl class="grid grid-cols-2 gap-y-3 text-sm">
                 <div><dt class="text-slate-500">Product</dt><dd class="font-medium">{{ $production->product->name }}</dd></div>
                 <div><dt class="text-slate-500">Quantity</dt><dd class="font-medium">{{ $production->quantity }} {{ $production->product->unit }}</dd></div>
+                @if ($production->wastage)
+                    <div><dt class="text-slate-500">Wastage / rejected</dt><dd class="font-medium text-rose-600">{{ $production->wastage }} {{ $production->product->unit }}</dd></div>
+                @endif
+                @if ($production->request)
+                    <div><dt class="text-slate-500">Request</dt><dd class="font-medium">
+                        <a href="{{ route('production-requests.show', $production->request) }}" class="text-amber-600 hover:text-amber-500">{{ $production->request->request_number }}</a>
+                    </dd></div>
+                @endif
                 <div><dt class="text-slate-500">Unit cost</dt><dd class="font-medium">{{ config('pos.currency') }}{{ number_format($production->unit_cost, 2) }}</dd></div>
                 <div><dt class="text-slate-500">Total cost</dt><dd class="font-medium">{{ config('pos.currency') }}{{ number_format($production->total_cost, 2) }}</dd></div>
                 <div><dt class="text-slate-500">Baked by</dt><dd class="font-medium">{{ $production->user?->name ?: '-' }}</dd></div>
@@ -47,7 +55,7 @@
             </table>
 
             <div class="mt-6 flex gap-3">
-                <a href="{{ route('productions.create') }}" class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">New Batch</a>
+                <a href="{{ route('production-requests.create') }}" class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">New Request</a>
                 <a href="{{ route('productions.index') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">All Batches</a>
             </div>
         </div>

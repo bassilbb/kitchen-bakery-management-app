@@ -33,6 +33,7 @@ Every user is either an **Admin**, a **Cashier**, or a **Staff** member assigned
 | Orders / Refunds       |         |        |    x    |            |
 | Customers              |         |        |    x    |            |
 | Categories             |         |    x   |         |            |
+| Production Requests    |    x    |    x   |         |            |
 | Ingredients            |    x    |        |         |            |
 | Suppliers              |    x    |        |         |            |
 | Receive stock / purchases |  x    |        |         |            |
@@ -73,20 +74,50 @@ The bakery owns **finished goods**: the products made from the raw materials.
 2. **Recipes** - Define the bill of materials: how much of each ingredient goes
    into one unit of the product (e.g. 0.5 kg flour per sourdough loaf). The app
    recalculates the product's estimated cost automatically when you save.
-3. **Baking / Production** - Start a batch by picking a product and a quantity.
-   The app:
-   - shows the required ingredients and whether you have enough,
-   - deducts the ingredients from kitchen stock,
-   - adds the finished units to product stock,
-   - records a production batch with the production cost.
-4. **Product stock** - Finished goods can be adjusted manually (waste, damaged,
+3. **Production Requests** - To bake, the bakery no longer deducts kitchen stock
+   directly. Instead they file an **ingredient request** for the batch:
+   - pick the product and quantity; the app calculates the required ingredients
+     from the recipe and shows what is available,
+   - a request cannot exceed available stock unless an admin approves an
+     exception,
+   - the request is submitted for the kitchen to review.
+4. **Baking / Production** - Once the kitchen has issued the ingredients, the
+   bakery records the finished batch: units produced and any wastage/rejected
+   units. Finished units are added to product stock.
+5. **Product stock** - Finished goods can be adjusted manually (waste, damaged,
    counted extra), and every sale deducts stock automatically.
+
+## The ingredient request workflow
+
+This is how the two departments move raw materials from the kitchen to the bakery:
+
+1. **Bakery plans a batch** - creates a request (saved as a draft or submitted
+   straight away). The system shows the required ingredients and marks any that
+   are short. Stock is **not** deducted here.
+2. **Kitchen reviews** - a submitted request is approved or rejected (with an
+   optional reason). Kitchen staff decide before anything leaves the store.
+3. **Kitchen issues** - on an approved request, the kitchen confirms the amounts
+   actually handed over. Stock is **deducted at issuance**, an `issue` stock
+   movement is logged against the request number, and the request becomes
+   *Issued* (or *Partially Issued* if only part of a line was handed over).
+4. **Bakery produces** - once fully issued, the bakery records the finished
+   batch (units produced + wastage), which adds finished goods to product stock
+   and closes the request as *Completed*.
+
+Statuses: `draft → submitted → approved → (partially issued) → issued → completed`,
+with `rejected` and `cancelled` as alternatives.
+
+Because every issuance is a logged stock movement tied to the request number, you
+can always answer: who requested it, who issued it, when, how much, and which
+production batch consumed it.
 
 ## Where the two meet
 
-The departments connect through **stock movements** and the **POS**:
+The departments connect through **stock movements**, the **POS**, and the
+**ingredient request workflow**:
 
-- The bakery consumes ingredients (kitchen stock) when it produces goods.
+- The bakery receives ingredients from kitchen stock through approved, issued
+  production requests (never by directly editing kitchen stock).
 - The kitchen replenishes those ingredients by receiving stock from suppliers.
 - Products (bakery output) are sold by cashiers at the **Sell (POS)** register,
   which deducts finished stock and creates orders.
@@ -94,9 +125,9 @@ The departments connect through **stock movements** and the **POS**:
   financial picture, so nobody runs out of flour or croissants.
 
 ```
-  Supplier --> (Kitchen) Ingredient stock --recipe--> (Bakery) Product stock --> (POS) Sale
-                          ^   |                                      |
-                          |   +-- production usage -----------------+
+  Supplier --> (Kitchen) Ingredient stock --issue/request--> (Bakery) Product stock --> (POS) Sale
+                          ^   |                                                 |
+                          |   +-- production usage ----------------------------+
                           +-- receive stock
 ```
 
