@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductionRequest;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -77,28 +78,55 @@ class KitchenBakeryTest extends TestCase
 
         $this->actingAs($user);
 
-        $this->post('/productions', [
+        $this->post('/production-requests', [
             'product_id' => $product->id,
             'quantity' => 5,
+            'action' => 'submit',
         ])->assertSessionHas('error');
     }
 
-    public function test_production_deducts_ingredients_and_adds_product_stock(): void
+    public function test_full_request_to_production_workflow(): void
     {
-        $user = User::factory()->create(['role' => 'staff', 'department' => 'bakery']);
+        $bakery = User::factory()->create(['role' => 'staff', 'department' => 'bakery']);
+        $kitchen = User::factory()->create(['role' => 'staff', 'department' => 'kitchen']);
         $flour = Ingredient::factory()->create(['stock_qty' => 10, 'cost_per_unit' => 2]);
         $product = Product::factory()->create(['cost' => 1, 'stock_qty' => 0]);
         $product->recipeItems()->create(['ingredient_id' => $flour->id, 'quantity' => 0.5]);
 
-        $this->actingAs($user);
-
-        $this->post('/productions', [
+        // Bakery requests ingredients for a batch.
+        $this->actingAs($bakery);
+        $this->post('/production-requests', [
             'product_id' => $product->id,
             'quantity' => 4,
+            'action' => 'submit',
         ])->assertRedirect();
 
+        $productionRequest = ProductionRequest::first();
+        $this->assertEquals('submitted', $productionRequest->status);
+
+        // Kitchen approves and issues - stock is only deducted at issuance.
+        $this->actingAs($kitchen);
+        $this->post("/production-requests/{$productionRequest->id}/approve")->assertRedirect();
+        $this->assertEquals('approved', $productionRequest->fresh()->status);
+
+        $this->post("/production-requests/{$productionRequest->id}/issue", [
+            'issued' => [$productionRequest->items->first()->id => 2],
+        ])->assertRedirect();
+
+        $productionRequest->refresh();
+        $this->assertEquals('issued', $productionRequest->status);
         $this->assertEquals(8, $flour->fresh()->stock_qty);
+
+        // Bakery records the finished batch.
+        $this->actingAs($bakery);
+        $this->post("/production-requests/{$productionRequest->id}/produce", [
+            'quantity' => 4,
+            'wastage' => 0,
+        ])->assertRedirect();
+
         $this->assertEquals(4, $product->fresh()->stock_qty);
+        $this->assertEquals('completed', $productionRequest->fresh()->status);
+        $this->assertNotNull($productionRequest->fresh()->production);
     }
 
     public function test_ingredient_purchase_adds_stock(): void

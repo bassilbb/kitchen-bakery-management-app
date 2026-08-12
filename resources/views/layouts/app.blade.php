@@ -41,6 +41,10 @@
                     <x-nav-item href="{{ route('categories.index') }}" label="Categories" icon="categories" :active="request()->routeIs('categories.*')" />
                 @endif
 
+                @if (auth()->user()->canAccessKitchen() || auth()->user()->canAccessBakery())
+                    <x-nav-item href="{{ route('production-requests.index') }}" label="Production Requests" icon="requests" :active="request()->routeIs('production-requests.*')" />
+                @endif
+
                 @if (auth()->user()->canAccessKitchen())
                     <x-nav-item href="{{ route('ingredients.index') }}" label="Ingredients" icon="ingredients" :active="request()->routeIs('ingredients.*')" />
                     <x-nav-item href="{{ route('suppliers.index') }}" label="Suppliers" icon="suppliers" :active="request()->routeIs('suppliers.*')" />

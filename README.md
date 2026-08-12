@@ -10,14 +10,15 @@ A simple, all-in-one Laravel application for running a kitchen and bakery busine
 - **Recipes** - Define how many of each ingredient a product needs (bill of materials). Product cost is recalculated automatically when you save the recipe.
 - **Ingredients** - Raw materials with stock levels, suppliers, cost per unit, stock value, and low-stock thresholds.
 - **Receive Stock** - Record purchases to add ingredient stock and update unit cost, tied to a supplier.
-- **Baking / Production** - Produce a batch from a product recipe. The system checks ingredient availability, deducts ingredients, and adds finished stock. Fully logged.
+- **Baking / Production** - The bakery files a production request for a batch (ingredients are calculated from the recipe), the kitchen approves and issues the ingredients (stock is deducted at issuance with a logged movement), then the bakery records the finished batch including wastage/rejected units. Fully audited.
+- **Production Requests** - A formal request → review → issuance workflow between bakery and kitchen so raw materials only leave the store with approval and a stock movement record.
 - **Orders** - Full order history with receipts, one-click refunds that restore stock, and CSV export.
 - **Customers** - Save regular customers with contact details, pick them at checkout, and view each customer's order history, total spent, and average order.
 - **Suppliers** - Manage supplier contact details.
 - **Categories** - Organize products (bread, pastry, cake, etc.).
 - **Expenses** - Record business expenses (rent, utilities, wages, ingredients, etc.) with categories. Reports show expenses in a date range, expenses by category, and net profit.
 - **Reports** - Date-range sales totals, discounts, tax, expenses, net profit, payment-method breakdown, daily sales, top products, production history, most-used ingredients, inventory value, and CSV order export.
-- **Stock Movements** - Complete audit trail of every purchase, usage, sale, and manual adjustment for ingredients and products.
+- **Stock Movements** - Complete audit trail of every purchase, usage, issuance to production, sale, and manual adjustment for ingredients and products.
 - **Authentication** - Register, login, and profile/password management. The first registered user becomes the admin.
 - **Role-based permissions** - Admins see everything. Cashiers handle all sales (Dashboard, Sell/POS, Orders, Customers, Profile). Kitchen staff see only Ingredients/Suppliers; Bakery staff see only Products/Recipes/Production/Categories. Reports, Expenses, and user management are admin-only. See `docs/KITCHEN_AND_BAKERY_OVERVIEW.md`.
 - **Company settings** - Admins can upload the company logo and set the company name from Settings; they appear in the sidebar and on the login page.
@@ -111,6 +112,7 @@ php artisan test
 
 1. Add **ingredients** and record an opening stock or a purchase from a **supplier**.
 2. Add **products** and define their **recipes** (ingredient quantities per unit).
-3. Create a **production batch** to bake products - ingredients are deducted automatically.
-4. Use **Sell (POS)** to complete customer sales and print receipts.
-5. Watch the **dashboard** for low stock and review everything in **Reports**.
+3. The bakery files a **production request** for a batch; the kitchen approves it and **issues** the ingredients (stock is deducted and logged at issuance).
+4. Once issued, the bakery records the **production batch** (units produced + wastage), adding finished goods to stock.
+5. Use **Sell (POS)** to complete customer sales and print receipts.
+6. Watch the **dashboard** for low stock and review everything in **Reports**.
