@@ -30,11 +30,15 @@
 
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1 text-sm font-medium">
                 <x-nav-item href="{{ route('dashboard') }}" label="Dashboard" icon="dashboard" :active="request()->routeIs('dashboard')" />
-                <x-nav-item href="{{ route('pos.index') }}" label="Sell (POS)" icon="pos" :active="request()->routeIs('pos.*')" />
+
+                @if (auth()->user()->canAccessSales())
+                    <x-nav-item href="{{ route('pos.index') }}" label="Sell (POS)" icon="pos" :active="request()->routeIs('pos.*')" />
+                @endif
 
                 @if (auth()->user()->canAccessBakery())
                     <x-nav-item href="{{ route('products.index') }}" label="Products" icon="products" :active="request()->routeIs('products.*')" />
                     <x-nav-item href="{{ route('productions.index') }}" label="Baking / Production" icon="production" :active="request()->routeIs('productions.*')" />
+                    <x-nav-item href="{{ route('categories.index') }}" label="Categories" icon="categories" :active="request()->routeIs('categories.*')" />
                 @endif
 
                 @if (auth()->user()->canAccessKitchen())
@@ -42,9 +46,10 @@
                     <x-nav-item href="{{ route('suppliers.index') }}" label="Suppliers" icon="suppliers" :active="request()->routeIs('suppliers.*')" />
                 @endif
 
-                <x-nav-item href="{{ route('orders.index') }}" label="Orders" icon="orders" :active="request()->routeIs('orders.*')" />
-
-                <x-nav-item href="{{ route('customers.index') }}" label="Customers" icon="customers" :active="request()->routeIs('customers.*')" />
+                @if (auth()->user()->canAccessSales())
+                    <x-nav-item href="{{ route('orders.index') }}" label="Orders" icon="orders" :active="request()->routeIs('orders.*')" />
+                    <x-nav-item href="{{ route('customers.index') }}" label="Customers" icon="customers" :active="request()->routeIs('customers.*')" />
+                @endif
 
                 @if (auth()->user()->isAdmin())
                     <x-nav-item href="{{ route('reports.index') }}" label="Reports" icon="reports" :active="request()->routeIs('reports.*')" />

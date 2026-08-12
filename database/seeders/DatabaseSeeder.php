@@ -49,6 +49,15 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $cashier = User::updateOrCreate(
+            ['email' => 'cashier@example.com'],
+            [
+                'name' => 'Tally Cashier',
+                'password' => Hash::make('password'),
+                'role' => 'cashier',
+            ]
+        );
+
         $categories = collect([
             ['name' => 'Bread', 'description' => 'Freshly baked bread'],
             ['name' => 'Pastry', 'description' => 'Flaky pastries and croissants'],

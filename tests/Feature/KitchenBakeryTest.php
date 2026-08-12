@@ -28,7 +28,7 @@ class KitchenBakeryTest extends TestCase
 
     public function test_pos_checkout_creates_order_and_deducts_stock(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['role' => 'cashier', 'department' => null]);
         $product = Product::factory()->create(['price' => 5, 'stock_qty' => 10]);
 
         $this->actingAs($user);
@@ -52,7 +52,7 @@ class KitchenBakeryTest extends TestCase
 
     public function test_checkout_blocked_when_stock_depleted(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['role' => 'cashier', 'department' => null]);
         $product = Product::factory()->create(['price' => 5, 'stock_qty' => 10]);
 
         $this->actingAs($user);
@@ -120,7 +120,7 @@ class KitchenBakeryTest extends TestCase
 
     public function test_order_refund_restores_stock(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['role' => 'cashier', 'department' => null]);
         $product = Product::factory()->create(['price' => 5, 'stock_qty' => 10]);
         $order = $this->makeCompletedOrder($user, $product);
 

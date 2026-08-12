@@ -17,13 +17,13 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
-            'role' => ['required', 'in:admin,staff'],
+            'role' => ['required', 'in:admin,cashier,staff'],
             'department' => ['nullable', 'in:kitchen,bakery'],
         ]);
 
-        if ($data['role'] === User::ROLE_ADMIN) {
+        if (in_array($data['role'], [User::ROLE_ADMIN, User::ROLE_CASHIER])) {
             $user->update([
-                'role' => User::ROLE_ADMIN,
+                'role' => $data['role'],
                 'department' => null,
             ]);
         } else {

@@ -13,7 +13,7 @@ class PosHoldTest extends TestCase
 
     private function user(): User
     {
-        return User::factory()->create();
+        return User::factory()->create(['role' => 'cashier', 'department' => null]);
     }
 
     public function test_cart_can_be_held_and_resumed(): void

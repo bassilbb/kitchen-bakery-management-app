@@ -32,6 +32,9 @@ class ExpenseTest extends TestCase
             $user = User::factory()->create(['role' => User::ROLE_STAFF, 'department' => $department]);
             $this->actingAs($user)->get('/expenses')->assertForbidden();
         }
+
+        $cashier = User::factory()->create(['role' => User::ROLE_CASHIER, 'department' => null]);
+        $this->actingAs($cashier)->get('/expenses')->assertForbidden();
     }
 
     public function test_admin_can_create_expense(): void

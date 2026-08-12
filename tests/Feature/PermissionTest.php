@@ -16,7 +16,7 @@ class PermissionTest extends TestCase
 
         $this->actingAs($admin);
 
-        foreach (['/products', '/productions', '/ingredients', '/suppliers', '/reports', '/users'] as $path) {
+        foreach (['/products', '/productions', '/ingredients', '/suppliers', '/reports', '/users', '/pos', '/orders', '/customers', '/categories', '/expenses', '/settings'] as $path) {
             $this->get($path)->assertOk();
         }
     }
@@ -27,11 +27,17 @@ class PermissionTest extends TestCase
 
         $this->actingAs($user);
 
+        $this->get('/dashboard')->assertOk();
+        $this->get('/profile')->assertOk();
         $this->get('/ingredients')->assertOk();
         $this->get('/suppliers')->assertOk();
 
         $this->get('/products')->assertForbidden();
         $this->get('/productions')->assertForbidden();
+        $this->get('/categories')->assertForbidden();
+        $this->get('/pos')->assertForbidden();
+        $this->get('/orders')->assertForbidden();
+        $this->get('/customers')->assertForbidden();
         $this->get('/reports')->assertForbidden();
         $this->get('/users')->assertForbidden();
     }
@@ -42,35 +48,54 @@ class PermissionTest extends TestCase
 
         $this->actingAs($user);
 
+        $this->get('/dashboard')->assertOk();
+        $this->get('/profile')->assertOk();
         $this->get('/products')->assertOk();
         $this->get('/productions')->assertOk();
+        $this->get('/categories')->assertOk();
 
         $this->get('/ingredients')->assertForbidden();
         $this->get('/suppliers')->assertForbidden();
+        $this->get('/pos')->assertForbidden();
+        $this->get('/orders')->assertForbidden();
+        $this->get('/customers')->assertForbidden();
         $this->get('/reports')->assertForbidden();
         $this->get('/users')->assertForbidden();
     }
 
-    public function test_reports_hidden_from_all_staff(): void
+    public function test_cashier_sees_sales_only(): void
     {
-        foreach (['kitchen', 'bakery'] as $department) {
-            $user = User::factory()->create(['role' => 'staff', 'department' => $department]);
-            $this->actingAs($user);
-            $this->get('/reports')->assertForbidden();
-        }
-    }
-
-    public function test_shared_modules_available_to_all_staff(): void
-    {
-        $user = User::factory()->create(['role' => 'staff', 'department' => 'kitchen']);
+        $user = User::factory()->create(['role' => 'cashier', 'department' => null]);
 
         $this->actingAs($user);
 
         $this->get('/dashboard')->assertOk();
+        $this->get('/profile')->assertOk();
         $this->get('/pos')->assertOk();
         $this->get('/orders')->assertOk();
-        $this->get('/categories')->assertOk();
-        $this->get('/profile')->assertOk();
+        $this->get('/customers')->assertOk();
+
+        $this->get('/ingredients')->assertForbidden();
+        $this->get('/suppliers')->assertForbidden();
+        $this->get('/products')->assertForbidden();
+        $this->get('/productions')->assertForbidden();
+        $this->get('/categories')->assertForbidden();
+        $this->get('/reports')->assertForbidden();
+        $this->get('/users')->assertForbidden();
+        $this->get('/expenses')->assertForbidden();
+        $this->get('/settings')->assertForbidden();
+    }
+
+    public function test_reports_hidden_from_all_non_admins(): void
+    {
+        $kitchen = User::factory()->create(['role' => 'staff', 'department' => 'kitchen']);
+        $bakery = User::factory()->create(['role' => 'staff', 'department' => 'bakery']);
+        $cashier = User::factory()->create(['role' => 'cashier', 'department' => null]);
+
+        foreach ([$kitchen, $bakery, $cashier] as $user) {
+            $this->actingAs($user);
+            $this->get('/reports')->assertForbidden();
+        }
     }
 
     public function test_admin_can_update_user_permissions(): void
@@ -96,6 +121,21 @@ class PermissionTest extends TestCase
         $this->assertNull($staff->fresh()->department);
     }
 
+    public function test_admin_can_promote_user_to_cashier(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'department' => null]);
+        $staff = User::factory()->create(['role' => 'staff', 'department' => 'bakery']);
+
+        $this->actingAs($admin);
+
+        $this->put("/users/{$staff->id}", [
+            'role' => 'cashier',
+        ])->assertRedirect();
+
+        $this->assertEquals('cashier', $staff->fresh()->role);
+        $this->assertNull($staff->fresh()->department);
+    }
+
     public function test_staff_cannot_manage_users(): void
     {
         $user = User::factory()->create(['role' => 'staff', 'department' => 'bakery']);
@@ -104,5 +144,15 @@ class PermissionTest extends TestCase
 
         $this->get('/users')->assertForbidden();
         $this->put('/users/1', ['role' => 'staff', 'department' => 'kitchen'])->assertForbidden();
+    }
+
+    public function test_cashier_cannot_manage_users(): void
+    {
+        $cashier = User::factory()->create(['role' => 'cashier', 'department' => null]);
+
+        $this->actingAs($cashier);
+
+        $this->get('/users')->assertForbidden();
+        $this->put('/users/1', ['role' => 'cashier'])->assertForbidden();
     }
 }
