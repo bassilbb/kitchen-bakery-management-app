@@ -62,6 +62,39 @@
     opacity: 1;
 }
 
+/* Stat card gradient backgrounds */
+.stat-gradient-sales {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #334155 100%);
+}
+
+.stat-gradient-orders {
+    background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%);
+}
+
+.stat-gradient-week {
+    background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+}
+
+.stat-gradient-baked {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+.stat-gradient-expenses {
+    background: linear-gradient(135deg, #be123c 0%, #f43f5e 100%);
+}
+
+.stat-gradient-net {
+    background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
+}
+
+.stat-gradient-pending {
+    background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+}
+
+.stat-gradient-lowstock {
+    background: linear-gradient(135deg, #be123c 0%, #fb7185 100%);
+}
+
 /* Standard white cards get a subtle HD lift and depth on hover */
 .card-hd,
 .bg-white.rounded-xl.border.border-slate-200,
