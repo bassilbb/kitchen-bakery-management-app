@@ -2,47 +2,177 @@
 
 @section('title', 'Dashboard')
 
+@push('styles')
+    <style>
+        .card-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+            will-change: transform;
+        }
+
+        .card-3d:hover {
+            transform: translateY(-6px) perspective(900px) rotateX(3deg);
+            box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.22), 0 8px 20px -8px rgba(245, 158, 11, 0.28);
+        }
+
+        .stat-gradient-sales {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #334155 100%);
+        }
+
+        .stat-gradient-orders {
+            background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%);
+        }
+
+        .stat-gradient-week {
+            background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+        }
+
+        .stat-gradient-baked {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        }
+
+        .stat-gradient-expenses {
+            background: linear-gradient(135deg, #be123c 0%, #f43f5e 100%);
+        }
+
+        .stat-gradient-net {
+            background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
+        }
+
+        .stat-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+            transform: translateZ(30px);
+        }
+
+        .card-3d .card-inner {
+            transform: translateZ(0);
+            transition: transform 0.35s ease;
+        }
+
+        .card-3d:hover .card-inner {
+            transform: translateZ(16px);
+        }
+
+        .glow-amber {
+            position: relative;
+        }
+
+        .glow-amber::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 1rem;
+            background: linear-gradient(120deg, rgba(245, 158, 11, 0.5), rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.5));
+            z-index: -1;
+            filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .glow-amber:hover::before {
+            opacity: 1;
+        }
+    </style>
+@endpush
+
 @section('content')
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Today's Sales</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ config('pos.currency') }}{{ number_format($todaySales, 2) }}</p>
+    {{-- Top stat cards --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-sales card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-slate-300">Today's Sales</p>
+                    <p class="mt-2 text-3xl font-black tracking-tight text-white">{{ config('pos.currency') }}{{ number_format($todaySales, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/10 text-amber-400">
+                    <x-svg-icon icon="pos" />
+                </span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Today's Orders</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ $todayOrders }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-orders card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-amber-100/90">Today's Orders</p>
+                    <p class="mt-2 text-3xl font-black tracking-tight text-white">{{ $todayOrders }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white">
+                    <x-svg-icon icon="orders" />
+                </span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">This Week's Sales</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ config('pos.currency') }}{{ number_format($weekSales, 2) }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-week card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-emerald-100/90">This Week's Sales</p>
+                    <p class="mt-2 text-3xl font-black tracking-tight text-white">{{ config('pos.currency') }}{{ number_format($weekSales, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white">
+                    <x-svg-icon icon="reports" />
+                </span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Today's Batches Baked</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ $todayProduction }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-baked card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-purple-100/90">Today's Batches Baked</p>
+                    <p class="mt-2 text-3xl font-black tracking-tight text-white">{{ $todayProduction }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white">
+                    <x-svg-icon icon="production" />
+                </span>
+            </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Today's Expenses</p>
-            <p class="mt-1 text-2xl font-bold text-rose-600">-{{ config('pos.currency') }}{{ number_format($todayExpenses, 2) }}</p>
+    {{-- Secondary stat row --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-expenses card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-rose-100/90">Today's Expenses</p>
+                    <p class="mt-2 text-3xl font-black tracking-tight text-white">-{{ config('pos.currency') }}{{ number_format($todayExpenses, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white">
+                    <x-svg-icon icon="expenses" />
+                </span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Today's Net</p>
-            <p class="mt-1 text-2xl font-bold text-emerald-600">{{ config('pos.currency') }}{{ number_format($todaySales - $todayExpenses, 2) }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-net card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-sky-100/90">Today's Net</p>
+                    <p class="mt-2 text-3xl font-black tracking-tight text-white">{{ config('pos.currency') }}{{ number_format($todaySales - $todayExpenses, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white">
+                    <x-svg-icon icon="dashboard" />
+                </span>
+            </div>
         </div>
-        <div class="sm:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
-            <h2 class="font-semibold text-slate-900 mb-3">Today's Payments</h2>
+
+        <div class="sm:col-span-2 card-3d glow-amber rounded-2xl bg-white border border-slate-200 shadow-lg shadow-slate-200/60 p-5">
+            <h2 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-700"><x-svg-icon icon="pos" /></span>
+                Today's Payments
+            </h2>
             @php
                 $paymentColors = ['cash' => 'bg-emerald-500', 'card' => 'bg-sky-500', 'online' => 'bg-violet-500'];
                 $payMax = max(1, $paymentBreakdown->max('total'));
             @endphp
-            <div class="space-y-2">
+            <div class="space-y-3">
                 @forelse ($paymentBreakdown as $method)
                     <div class="flex items-center gap-3 text-sm">
                         <span class="w-16 font-medium text-slate-700">{{ ucfirst($method->payment_method) }}</span>
-                        <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full {{ $paymentColors[$method->payment_method] ?? 'bg-slate-400' }}"
+                        <div class="flex-1 h-3.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                            <div class="h-full rounded-full {{ $paymentColors[$method->payment_method] ?? 'bg-slate-400' }} transition-all duration-500"
                                  style="width: {{ round($method->total / $payMax * 100) }}%"></div>
                         </div>
                         <span class="w-24 text-right font-semibold text-slate-700">{{ config('pos.currency') }}{{ number_format($method->total, 2) }}</span>
@@ -55,9 +185,13 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
-            <h2 class="font-semibold text-slate-900 mb-4">Sales - Last 7 Days</h2>
+    {{-- Charts --}}
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-5">
+        <div class="card-3d rounded-2xl bg-white border border-slate-200 shadow-lg shadow-slate-200/60 p-6 flex flex-col">
+            <h2 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700"><x-svg-icon icon="reports" /></span>
+                Sales - Last 7 Days
+            </h2>
             @php
                 $salesConfig = [
                     'type' => 'line',
@@ -67,9 +201,12 @@
                             'label' => 'Sales',
                             'data' => $salesChart->pluck('total'),
                             'borderColor' => '#f59e0b',
-                            'backgroundColor' => 'rgba(245, 158, 11, 0.15)',
+                            'backgroundColor' => 'rgba(245, 158, 11, 0.18)',
                             'fill' => true,
-                            'tension' => 0.35,
+                            'tension' => 0.4,
+                            'pointRadius' => 4,
+                            'pointBackgroundColor' => '#f59e0b',
+                            'borderWidth' => 3,
                         ]],
                     ],
                     'options' => [
@@ -77,7 +214,8 @@
                         'maintainAspectRatio' => false,
                         'plugins' => ['legend' => ['display' => false]],
                         'scales' => [
-                            'y' => ['beginAtZero' => true, 'ticks' => ['callback' => 'formatCurrency']],
+                            'y' => ['beginAtZero' => true, 'grid' => ['color' => 'rgba(226, 232, 240, 0.6)'], 'ticks' => ['callback' => 'formatCurrency']],
+                            'x' => ['grid' => ['display' => false]],
                         ],
                     ],
                 ];
@@ -87,23 +225,28 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
-            <h2 class="font-semibold text-slate-900 mb-4">Sales vs Expenses - Last 7 Days</h2>
+        <div class="card-3d rounded-2xl bg-white border border-slate-200 shadow-lg shadow-slate-200/60 p-6 flex flex-col">
+            <h2 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-rose-100 text-rose-700"><x-svg-icon icon="reports" /></span>
+                Sales vs Expenses - Last 7 Days
+            </h2>
             @php
                 $netConfig = [
                     'type' => 'bar',
                     'data' => [
                         'labels' => $netChart->pluck('label'),
                         'datasets' => [
-                            ['label' => 'Sales', 'data' => $netChart->pluck('sales'), 'backgroundColor' => '#10b981'],
-                            ['label' => 'Expenses', 'data' => $netChart->pluck('expenses'), 'backgroundColor' => '#f43f5e'],
+                            ['label' => 'Sales', 'data' => $netChart->pluck('sales'), 'backgroundColor' => 'rgba(16, 185, 129, 0.85)', 'borderRadius' => 6, 'borderSkipped' => false],
+                            ['label' => 'Expenses', 'data' => $netChart->pluck('expenses'), 'backgroundColor' => 'rgba(244, 63, 94, 0.85)', 'borderRadius' => 6, 'borderSkipped' => false],
                         ],
                     ],
                     'options' => [
                         'responsive' => true,
                         'maintainAspectRatio' => false,
+                        'plugins' => ['legend' => ['position' => 'bottom', 'labels' => ['usePointStyle' => true, 'boxWidth' => 8]]],
                         'scales' => [
-                            'y' => ['beginAtZero' => true, 'ticks' => ['callback' => 'formatCurrency']],
+                            'y' => ['beginAtZero' => true, 'grid' => ['color' => 'rgba(226, 232, 240, 0.6)'], 'ticks' => ['callback' => 'formatCurrency']],
+                            'x' => ['grid' => ['display' => false]],
                         ],
                     ],
                 ];
@@ -114,9 +257,12 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
-            <h2 class="font-semibold text-slate-900 mb-4">Payment Methods - Last 7 Days</h2>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-5">
+        <div class="card-3d rounded-2xl bg-white border border-slate-200 shadow-lg shadow-slate-200/60 p-6 flex flex-col">
+            <h2 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 text-violet-700"><x-svg-icon icon="pos" /></span>
+                Payment Methods - Last 7 Days
+            </h2>
             @php
                 $paymentConfig = [
                     'type' => 'doughnut',
@@ -125,13 +271,17 @@
                         'datasets' => [[
                             'data' => $paymentChart->pluck('total'),
                             'backgroundColor' => ['#10b981', '#0ea5e9', '#8b5cf6'],
+                            'borderColor' => '#ffffff',
+                            'borderWidth' => 3,
+                            'hoverOffset' => 10,
                         ]],
                     ],
                     'options' => [
                         'responsive' => true,
                         'maintainAspectRatio' => false,
+                        'cutout' => '62%',
                         'plugins' => [
-                            'legend' => ['position' => 'bottom'],
+                            'legend' => ['position' => 'bottom', 'labels' => ['usePointStyle' => true, 'boxWidth' => 8, 'padding' => 16]],
                             'tooltip' => ['callbacks' => ['label' => 'formatCurrencyTooltip']],
                         ],
                     ],
@@ -142,11 +292,14 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h2 class="font-semibold text-slate-900 mb-4">Top Products (by quantity sold)</h2>
+        <div class="card-3d rounded-2xl bg-white border border-slate-200 shadow-lg shadow-slate-200/60 p-6">
+            <h2 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-700"><x-svg-icon icon="products" /></span>
+                Top Products
+            </h2>
             @forelse ($topProducts as $index => $top)
-                <div class="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
-                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-700 text-sm font-bold">{{ $index + 1 }}</span>
+                <div class="flex items-center gap-3 py-2.5 border-b border-slate-100 last:border-0">
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br {{ ['from-amber-400 to-orange-500', 'from-slate-400 to-slate-500', 'from-orange-300 to-amber-500'][$index] ?? 'from-amber-400 to-orange-500' }} text-white text-sm font-bold shadow-md">{{ $index + 1 }}</span>
                     <div class="flex-1">
                         <p class="text-sm font-medium text-slate-900">{{ $top->product_name }}</p>
                         <p class="text-xs text-slate-500">{{ number_format($top->total_qty, 1) }} sold</p>
@@ -159,11 +312,14 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mt-5">
         @if (auth()->user()->canAccessSales())
-        <div class="xl:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
+        <div class="xl:col-span-2 card-3d rounded-2xl bg-white border border-slate-200 shadow-lg shadow-slate-200/60 p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="font-semibold text-slate-900">Recent Orders</h2>
+                <h2 class="font-semibold text-slate-900 flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-sky-100 text-sky-700"><x-svg-icon icon="orders" /></span>
+                    Recent Orders
+                </h2>
                 <a href="{{ route('orders.index') }}" class="text-sm font-medium text-amber-600 hover:text-amber-500">View all</a>
             </div>
             <div class="overflow-x-auto">
@@ -179,7 +335,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($recentOrders as $order)
-                            <tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="py-2.5 pr-4">
                                     <a href="{{ route('orders.show', $order) }}" class="font-medium text-amber-600 hover:text-amber-500">{{ $order->order_number }}</a>
                                 </td>
@@ -197,8 +353,11 @@
         </div>
         @endif
 
-        <div class="{{ auth()->user()->canAccessSales() ? '' : 'xl:col-span-3' }} bg-white rounded-xl border border-slate-200 p-5">
-            <h2 class="font-semibold text-slate-900 mb-4">Low Stock Alerts</h2>
+        <div class="{{ auth()->user()->canAccessSales() ? '' : 'xl:col-span-3' }} card-3d rounded-2xl bg-white border border-slate-200 shadow-lg shadow-slate-200/60 p-6">
+            <h2 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-rose-100 text-rose-700"><x-svg-icon icon="ingredients" /></span>
+                Low Stock Alerts
+            </h2>
 
             @if (auth()->user()->canAccessKitchen())
                 <p class="text-xs uppercase tracking-wide text-slate-400 font-semibold mb-2">Ingredients</p>
