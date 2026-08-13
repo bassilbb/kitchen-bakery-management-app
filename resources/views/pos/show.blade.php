@@ -2,8 +2,40 @@
 
 @section('title', 'Receipt '.$order->order_number)
 
+@push('styles')
+    <style>
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            aside,
+            .no-print,
+            .print-hidden {
+                display: none !important;
+            }
+
+            main {
+                margin-left: 0 !important;
+            }
+
+            main h1,
+            main .bg-emerald-50,
+            main .bg-rose-50 {
+                display: none !important;
+            }
+
+            .print-receipt {
+                max-width: none;
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+@endpush
+
 @section('content')
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-2xl mx-auto print-receipt">
         <div class="bg-white rounded-xl border border-slate-200 p-6 sm:p-10">
             <div class="text-center border-b border-dashed border-slate-300 pb-6">
                 <p class="text-xl font-bold text-slate-900">Kitchen &amp; Bakery</p>
@@ -91,7 +123,7 @@
             <p class="text-center text-xs text-slate-400 mt-6">Thank you for your order!</p>
         </div>
 
-        <div class="flex justify-center gap-3 mt-6">
+        <div class="flex justify-center gap-3 mt-6 no-print">
             <a href="{{ route('pos.index') }}" class="rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-amber-400">New Sale</a>
             <button onclick="window.print()" class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Print Receipt</button>
             <a href="{{ route('orders.show', $order) }}" class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">View in Orders</a>
