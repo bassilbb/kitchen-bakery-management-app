@@ -19,38 +19,85 @@
            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Export orders (CSV)</a>
     </form>
 
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Sales</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ config('pos.currency') }}{{ number_format($salesTotal, 2) }}</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-sales card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-slate-300">Sales</p>
+                    <p class="mt-2 text-2xl font-black tracking-tight text-white">{{ config('pos.currency') }}{{ number_format($salesTotal, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/10 text-amber-400"><x-svg-icon icon="pos" /></span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Orders</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ $salesCount }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-orders card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-amber-100/90">Orders</p>
+                    <p class="mt-2 text-2xl font-black tracking-tight text-white">{{ $salesCount }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white"><x-svg-icon icon="orders" /></span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Discounts given</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ config('pos.currency') }}{{ number_format($discountGiven, 2) }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-net card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-sky-100/90">Discounts given</p>
+                    <p class="mt-2 text-2xl font-black tracking-tight text-white">{{ config('pos.currency') }}{{ number_format($discountGiven, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white"><x-svg-icon icon="reports" /></span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Units produced</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ number_format($unitsProduced, 0) }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-baked card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-purple-100/90">Units produced</p>
+                    <p class="mt-2 text-2xl font-black tracking-tight text-white">{{ number_format($unitsProduced, 0) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white"><x-svg-icon icon="production" /></span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Expenses</p>
-            <p class="mt-1 text-2xl font-bold text-rose-600">-{{ config('pos.currency') }}{{ number_format($expenseTotal, 2) }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-expenses card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-rose-100/90">Expenses</p>
+                    <p class="mt-2 text-2xl font-black tracking-tight text-white">-{{ config('pos.currency') }}{{ number_format($expenseTotal, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white"><x-svg-icon icon="expenses" /></span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Tax collected</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ config('pos.currency') }}{{ number_format($taxCollected, 2) }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-week card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-emerald-100/90">Tax collected</p>
+                    <p class="mt-2 text-2xl font-black tracking-tight text-white">{{ config('pos.currency') }}{{ number_format($taxCollected, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white"><x-svg-icon icon="reports" /></span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Production cost</p>
-            <p class="mt-1 text-2xl font-bold text-slate-900">{{ config('pos.currency') }}{{ number_format($productionTotal, 2) }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-pending card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-teal-100/90">Production cost</p>
+                    <p class="mt-2 text-2xl font-black tracking-tight text-white">{{ config('pos.currency') }}{{ number_format($productionTotal, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white"><x-svg-icon icon="production" /></span>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <p class="text-sm text-slate-500">Net profit</p>
-            <p class="mt-1 text-2xl font-bold {{ $netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ config('pos.currency') }}{{ number_format($netProfit, 2) }}</p>
+
+        <div class="card-3d glow-amber rounded-2xl shadow-lg shadow-slate-200/60">
+            <div class="stat-gradient-lowstock card-inner rounded-2xl p-5 text-white flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-rose-100/90">Net profit</p>
+                    <p class="mt-2 text-2xl font-black tracking-tight text-white">{{ config('pos.currency') }}{{ number_format($netProfit, 2) }}</p>
+                </div>
+                <span class="stat-icon h-12 w-12 bg-white/15 text-white"><x-svg-icon icon="dashboard" /></span>
+            </div>
         </div>
     </div>
 
