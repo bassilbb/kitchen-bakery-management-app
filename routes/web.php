@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/pos/resume/{key}', [PosController::class, 'resume'])->name('pos.resume');
         Route::post('/pos/discard/{key}', [PosController::class, 'discard'])->name('pos.discard');
         Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+        Route::get('/pos/search', [PosController::class, 'search'])->name('pos.search');
         Route::get('/pos/{order}', [PosController::class, 'show'])->name('pos.show');
 
         Route::get('/paystack/callback', [PosController::class, 'paystackCallback'])->name('paystack.callback');
