@@ -39,6 +39,34 @@ class PosController extends Controller
         return view('pos.index', compact('products', 'cart', 'categories', 'customers', 'heldCarts', 'paystackConfigured'));
     }
 
+    public function search(Request $request)
+    {
+        $query = Product::with('category')->where('is_active', true);
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('sku', 'like', '%'.$request->search.'%');
+            });
+        }
+
+        $products = $query->orderBy('name')->get();
+
+        if (! $request->expectsJson()) {
+            return redirect()->route('pos.index', $request->only(['search', 'category_id']));
+        }
+
+        return response()->json([
+            'success' => true,
+            'products_html' => view('pos._products', compact('products'))->render(),
+            'count' => $products->count(),
+        ]);
+    }
+
     protected function heldCarts(): array
     {
         $held = session('pos.held_carts', []);
@@ -100,13 +128,13 @@ class PosController extends Controller
         $newQty = $current + 1;
 
         if ($product->stock_qty < $newQty) {
-            return back()->with('error', 'Not enough stock for '.$product->name.'.');
+            return $this->cartError('Not enough stock for '.$product->name.'.');
         }
 
         $cart[$product->id] = $newQty;
         session(['pos.cart' => $cart]);
 
-        return back();
+        return $this->cartResponse($product->name.' added to cart.');
     }
 
     public function updateQty(Request $request)
@@ -120,7 +148,7 @@ class PosController extends Controller
         $qty = (float) $request->qty;
 
         if ($product->stock_qty < $qty) {
-            return back()->with('error', 'Not enough stock for '.$product->name.'.');
+            return $this->cartError('Not enough stock for '.$product->name.'.');
         }
 
         $cart = session('pos.cart', []);
@@ -133,7 +161,7 @@ class PosController extends Controller
 
         session(['pos.cart' => $cart]);
 
-        return back();
+        return $this->cartResponse('Cart updated.');
     }
 
     public function remove(Request $request)
@@ -142,22 +170,22 @@ class PosController extends Controller
         unset($cart[$request->product_id]);
         session(['pos.cart' => $cart]);
 
-        return back();
+        return $this->cartResponse('Item removed from cart.');
     }
 
     public function clear()
     {
         session()->forget('pos.cart');
 
-        return back();
+        return $this->cartResponse('Cart cleared.');
     }
 
-    public function hold()
+    public function hold(Request $request)
     {
         $cart = session('pos.cart', []);
 
         if (empty($cart)) {
-            return back()->with('error', 'Your cart is empty.');
+            return $this->cartError('Your cart is empty.');
         }
 
         $held = session('pos.held_carts', []);
@@ -170,7 +198,7 @@ class PosController extends Controller
         session(['pos.held_carts' => $held]);
         session()->forget('pos.cart');
 
-        return back()->with('success', 'Sale put on hold.');
+        return $this->cartResponse('Sale put on hold.');
     }
 
     public function resume(Request $request, string $key)
@@ -178,13 +206,13 @@ class PosController extends Controller
         $held = session('pos.held_carts', []);
 
         if (! isset($held[$key])) {
-            return back()->with('error', 'That held sale no longer exists.');
+            return $this->cartError('That held sale no longer exists.');
         }
 
         foreach ($held[$key]['cart'] as $id => $qty) {
             $product = Product::find($id);
             if ($product && $product->stock_qty < $qty) {
-                return back()->with('error', 'Not enough stock for '.$product->name.'. Adjust quantities after resuming.');
+                return $this->cartError('Not enough stock for '.$product->name.'. Adjust quantities after resuming.');
             }
         }
 
@@ -192,7 +220,7 @@ class PosController extends Controller
         unset($held[$key]);
         session(['pos.held_carts' => $held]);
 
-        return redirect()->route('pos.index')->with('success', 'Held sale resumed.');
+        return $this->cartResponse('Held sale resumed.', [], route('pos.index'));
     }
 
     public function discard(Request $request, string $key)
@@ -204,7 +232,57 @@ class PosController extends Controller
             session(['pos.held_carts' => $held]);
         }
 
-        return back()->with('success', 'Held sale discarded.');
+        return $this->cartResponse('Held sale discarded.');
+    }
+
+    protected function cartResponse(string $message, array $extra = [], ?string $redirect = null): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        if (! request()->expectsJson()) {
+            return $redirect
+                ? redirect($redirect)->with('success', $message)
+                : back()->with('success', $message);
+        }
+
+        return response()->json(array_merge([
+            'success' => true,
+            'message' => $message,
+            'cart_html' => $this->renderCart(),
+            'held_html' => $this->renderHeld(),
+        ], $extra));
+    }
+
+    protected function cartError(string $message): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        if (! request()->expectsJson()) {
+            return back()->with('error', $message);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'cart_html' => $this->renderCart(),
+            'held_html' => $this->renderHeld(),
+        ], 422);
+    }
+
+    protected function renderCart(): string
+    {
+        $cart = session('pos.cart', []);
+
+        return view('pos._cart', [
+            'cart' => $cart,
+            'products' => Product::with('category')
+                ->whereIn('id', array_keys($cart))
+                ->orderBy('name')
+                ->get(),
+            'customers' => Customer::orderBy('name')->get(),
+            'paystackConfigured' => (new PaystackService)->isConfigured(),
+        ])->render();
+    }
+
+    protected function renderHeld(): string
+    {
+        return view('pos._held', ['heldCarts' => $this->heldCarts()])->render();
     }
 
     public function checkout(Request $request)
